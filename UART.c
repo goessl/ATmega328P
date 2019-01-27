@@ -31,7 +31,6 @@
 
 
 #include <avr/io.h>
-#include <stdio.h>
 #include "UART.h"
 
 
@@ -40,10 +39,6 @@
     #define F_CPU 16000000UL
     #warning "F_CPU not defined! Assuming 16MHz."
 #endif
-
-
-
-#include <util/setbaud.h>
 
 
 
@@ -73,38 +68,55 @@ FILE* UART_getIn(void)
 
 
 
-void UART_init(void)
+bool UART_init(uint32_t baud, bool stdToUart)
 {
-    //BAUD rate
-    UBRR0H = UBRRH_VALUE;
-    UBRR0L = UBRRL_VALUE;
-    #if USE_2X
-        UCSR0A |= (1 << U2X0);
-    #endif
+    bool ret = UART_setBaud(baud);
     
-    //Enable receiver & transmitter
+    
+    
     UCSR0B |= (1 << RXEN0) | (1 << TXEN0);
     
-    //Redirect standard streams to UART
-    #ifdef UART_STD
+    if(stdToUart)
+    {
         stdout = &UART_out;
         stdin = &UART_in;
-    #endif
+    }
+    
+    
+    return ret;
+}
+
+bool UART_setBaud(uint32_t baud)
+{
+    uint16_t ubrrValue = (F_CPU + 8*baud) / (16*baud) - 1;
+    
+    if(100 * F_CPU > 16 * (ubrrValue + 1) * (100 + BAUD_TOL) * baud
+        || 100 * F_CPU < 16 * (ubrrValue + 1) * (100 - BAUD_TOL) * baud)
+    {
+        ubrrValue = (F_CPU + 4*baud) / (8*baud) - 1;
+        UCSR0A |= (1 << U2X0);
+    }
+    
+    UBRR0H = ubrrValue >> 8;
+    UBRR0L = ubrrValue & 0xFF;
+    
+    return 100 * F_CPU > 8 * (ubrrValue + 1) * (100 + BAUD_TOL) * baud
+        || 100 * F_CPU < 8 * (ubrrValue + 1) * (100 - BAUD_TOL) * baud;
 }
 
 
 
-static int UART_isReceiveComplete(void)
+static bool UART_isReceiveComplete(void)
 {
     return UCSR0A & (1 << RXC0);
 }
 
-static int UART_isTransmitComplete(void)
+static bool UART_isTransmitComplete(void)
 {
     return UCSR0A & (1 << TXC0);
 }
 
-static int UART_isDataEmpty(void)
+static bool UART_isDataEmpty(void)
 {
     return UCSR0A & (1 << UDRE0);
 }

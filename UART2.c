@@ -32,7 +32,6 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <stdio.h>
 #include "RING.h"
 #include "UART2.h"
 
@@ -83,12 +82,13 @@ FILE* UART2_getIn(void)
 
 
 static volatile uint8_t UART2_transmitArray[UART2_BUF_LEN], UART2_receiveArray[UART2_BUF_LEN];
-static volatile RING_t UART2_transmitBuf = RING_init((uint8_t*)UART2_transmitArray, UART2_BUF_LEN), UART2_receiveBuf;
+static volatile RING_t UART2_transmitBuf, UART2_receiveBuf;
 
 
 
 void UART2_init(void)
 {
+    UART2_transmitBuf = RING_init((uint8_t*)UART2_transmitArray, UART2_BUF_LEN);
     UART2_receiveBuf = RING_init((uint8_t*)UART2_receiveArray, UART2_BUF_LEN);
     
     

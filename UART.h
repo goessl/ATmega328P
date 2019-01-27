@@ -35,20 +35,19 @@
 
 
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 
 
-#ifndef BAUD
-    #define BAUD 9600
-#endif
-
-#define UART_STD
+#define BAUD_TOL 2
 
 
 
-void UART_init(void);
+bool UART_init(uint32_t baud, bool stdToUart);
+bool UART_setBaud(uint32_t baud);
 
 FILE* UART_getOut(void);
 FILE* UART_getIn(void);
