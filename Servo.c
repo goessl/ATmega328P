@@ -32,6 +32,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <math.h>
 #include "Servo.h"
 
 
@@ -49,7 +50,9 @@
 
 
 #if SERVO_TIMER == 0
-    #define SERVO_TIMER_TOP 0xFF
+    #define SERVO_OCRxA OCR0A
+    #define SERVO_OCRxA_TYPE uint8_t
+    #define SERVO_TIMER_TOP UINT8_MAX
     #define SERVO_ISR_vect TIMER0_COMPA_vect
     
     #if SERVO_US_PER_SECOND / SERVO_BASE_US > F_CPU
@@ -84,7 +87,9 @@
     #endif
     
 #elif SERVO_TIMER == 1
-    #define SERVO_TIMER_TOP 0xFFFF
+    #define SERVO_OCRxA OCR1A
+    #define SERVO_OCRxA_TYPE uint16_t
+    #define SERVO_TIMER_TOP UINT16_MAX
     #define SERVO_ISR_vect TIMER1_COMPA_vect
     
     #if SERVO_US_PER_SECOND / SERVO_BASE_US > F_CPU
@@ -119,7 +124,9 @@
     #endif
     
 #elif SERVO_TIMER == 2
-    #define SERVO_TIMER_TOP 0xFF
+    #define SERVO_OCRxA OCR2A
+    #define SERVO_OCRxA_TYPE uint8_t
+    #define SERVO_TIMER_TOP UINT8_MAX
     #define SERVO_ISR_vect TIMER2_COMPA_vect
     
     #if SERVO_US_PER_SECOND / SERVO_BASE_US > F_CPU
@@ -168,9 +175,13 @@
 #endif
 
 
+#define SERVO_US_TO_OCRxA(us) (us * (F_CPU / SERVO_PRESCALER) / SERVO_US_PER_SECOND - 1)
 
-static double SERVO_percentToUs(double percent);
-static void SERVO_setTimer(double us);
+#define SERVO_BASE_OCRxA SERVO_US_TO_OCRxA(SERVO_BASE_US)
+#define SERVO_MIN_OCRxA SERVO_US_TO_OCRxA(SERVO_MIN_US)
+#define SERVO_MAX_OCRxA SERVO_US_TO_OCRxA(SERVO_MAX_US)
+
+#define SERVO_PERCENT_TO_OCRxA(percent) ((SERVO_MAX_OCRxA - SERVO_MIN_OCRxA) * percent + SERVO_MIN_OCRxA)
 
 
 
@@ -178,28 +189,25 @@ static volatile uint8_t** SERVO_PORTs;
 static volatile uint8_t* SERVO_masks;
 static volatile size_t SERVO_n;
 static volatile size_t SERVO_current = 0;
-static volatile double SERVO_values[SERVO_BASE_US / SERVO_MAX_US] = {0};
+static volatile SERVO_OCRxA_TYPE SERVO_values[SERVO_BASE_US / SERVO_MAX_US];
 
 
 
 void SERVO_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
 {
-    size_t i;
-    
-    
-    
     SERVO_PORTs = (volatile uint8_t**)PORTs;
     SERVO_masks = (volatile uint8_t*)masks;
     SERVO_n = (volatile size_t)n;
     
     
-    //Set outputs
-    for(i=0; i<SERVO_n; i++)
-        *DDRs[i] |= SERVO_masks[i];
+    
+    while(n--)
+        **DDRs++ |= *masks++;
     
     
-    //Timer
-    SERVO_setTimer(SERVO_values[0]);
+    
+    SERVO_setAllServos(0);
+    SERVO_OCRxA = SERVO_values[SERVO_current];
     #if SERVO_TIMER == 0
         TCCR0A |= (1 << WGM01);
         TCCR0B |= (CS02_VALUE << CS02) | (CS01_VALUE << CS01) | (CS00_VALUE << CS00);
@@ -222,8 +230,7 @@ void SERVO_setServo(size_t index, double percent)
     else if(percent < 0)
         percent = 0;
     
-    if(index < SERVO_n)
-        SERVO_values[index] = SERVO_percentToUs(percent);
+    SERVO_values[index] = SERVO_PERCENT_TO_OCRxA(percent);
 }
 
 void SERVO_setServos(double* percent)
@@ -243,38 +250,20 @@ void SERVO_setAllServos(double percent)
 }
 
 
-static double SERVO_percentToUs(double percent)
-{
-    return (SERVO_MAX_US - SERVO_MIN_US) * percent + SERVO_MIN_US;
-}
-
-static void SERVO_setTimer(double us)
-{
-    #if SERVO_TIMER == 0
-        OCR0A = us * F_CPU / SERVO_PRESCALER / SERVO_US_PER_SECOND - 1;
-    #elif SERVO_TIMER == 1
-        OCR1A = us * F_CPU / SERVO_PRESCALER / SERVO_US_PER_SECOND - 1;
-    #elif SERVO_TIMER == 2
-        OCR2A = us * F_CPU / SERVO_PRESCALER / SERVO_US_PER_SECOND - 1;
-    #endif
-}
-
-
 
 ISR(SERVO_ISR_vect)
 {
     if(~*SERVO_PORTs[SERVO_current] & SERVO_masks[SERVO_current])
     {
         *SERVO_PORTs[SERVO_current] |= SERVO_masks[SERVO_current];
-        SERVO_setTimer(SERVO_values[SERVO_current]);
+        SERVO_OCRxA = SERVO_values[SERVO_current];
     }
     else
     {
         *SERVO_PORTs[SERVO_current] &= ~SERVO_masks[SERVO_current];
-        SERVO_setTimer(SERVO_BASE_US/SERVO_n - SERVO_values[SERVO_current]);
+        SERVO_OCRxA = SERVO_BASE_OCRxA/SERVO_n - SERVO_values[SERVO_current];
         
-        SERVO_current++;
-        if(SERVO_current >= SERVO_n)
+        if(++SERVO_current >= SERVO_n)
             SERVO_current = 0;
     }
 }
