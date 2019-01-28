@@ -46,10 +46,11 @@
 static volatile double PID_dt;
 static volatile PID_t* PID_controllers;
 static volatile size_t PID_n;
+static void (*PID_cb)(void);
 
 
 
-void PID_init(uint32_t frequency, PID_t* controllers, size_t n)
+void PID_init(uint32_t frequency, PID_t* controllers, size_t n, void (*cb)(void))
 {
     uint8_t csValue = 0;
     uint16_t prescaler = 0;
@@ -59,6 +60,7 @@ void PID_init(uint32_t frequency, PID_t* controllers, size_t n)
     PID_controllers = controllers;
     PID_n = n;
     PID_dt = 1.0 / frequency;
+    PID_cb = cb;
     
     
     
@@ -85,7 +87,7 @@ void PID_init(uint32_t frequency, PID_t* controllers, size_t n)
         TCCR0A |= (1 << WGM01);
         TCCR0B |= csValue;
         TIMSK0 |= (1 << OCIE0A);
-        #define PID_ISR_vect TIMER0_COMPA_vect
+        #define PID_vect TIMER0_COMPA_vect
         
         
     #elif PID_TIMER == 1
@@ -110,7 +112,7 @@ void PID_init(uint32_t frequency, PID_t* controllers, size_t n)
         OCR1A = F_CPU / frequency / prescaler - 1;
         TCCR1B |= (1 << WGM12) | csValue;
         TIMSK1 |= (1 << OCIE1A);
-        #define PID_ISR_vect TIMER1_COMPA_vect
+        #define PID_vect TIMER1_COMPA_vect
         
         
     #elif PID_TIMER == 2
@@ -142,7 +144,7 @@ void PID_init(uint32_t frequency, PID_t* controllers, size_t n)
         TCCR2A |= (1 << WGM21);
         TCCR2B |= csValue;
         TIMSK2 |= (1 << OCIE2A);
-        #define PID_ISR_vect TIMER2_COMPA_vect
+        #define PID_vect TIMER2_COMPA_vect
     #endif
 }
 
@@ -193,11 +195,13 @@ static void PID_iterate(PID_t* controller, double dt)
 
 
 
-ISR(PID_ISR_vect)
+ISR(PID_vect)
 {
-    size_t i = PID_n;
-    PID_t* p = (PID_t*)PID_controllers;
+    size_t i;
     
-    while(i--)
-        PID_iterate(p++, PID_dt);
+    for(i=0; i<PID_n; i++)
+        PID_iterate((PID_t*)&PID_controllers[i], PID_dt);
+    
+    if(PID_cb)
+        PID_cb();
 }

@@ -60,7 +60,7 @@ typedef struct
 
 
 
-void PID_init(uint32_t frequency, PID_t* controllers, size_t n);
+void PID_init(uint32_t frequency, PID_t* controllers, size_t n, void (*cb)(void));
 
 PID_t PID_initController(double* w, double* r, double* y,
     double kp, double ki, double kd,
