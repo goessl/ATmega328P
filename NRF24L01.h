@@ -2,12 +2,12 @@
  * NRF24L01.h
  * 
  * Author:      Sebastian Gössl
- * Hardware:    ATmega328P, NRF24L01
+ * Hardware:    ATmega328P, NRF24L01+
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2019 Sebastian Gössl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,30 +35,30 @@
 
 
 
-#define NRF24L01_INTERRUPT 0
-
-#define NRF24L01_MAX_PAYLOAD 32
-
-#define NRF24L01_SEND_STATUS_NOT_YET      0
-#define NRF24L01_SEND_STATUS_DATA_SENT    1
-#define NRF24L01_SEND_STATUS_MAX_RT       2
-
-
-
-#include <stddef.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 
 
-int NRF24L01_init(uint8_t* csnDDR, uint8_t* csnPORT, uint8_t csnPin, uint8_t* ceDDR, uint8_t* cePORT, uint8_t cePin);
+#define NRF24L01_INTERRUPT 0
+#define NRF24L01_MAX_PAYLOAD 32
+#define NRF24L01_PIPES_N 6
 
-int NRF24L01_send(uint8_t* data, size_t len);
-uint8_t NRF24L01_sendStatus(void);
+#define NRF24L01_TX_STATUS_BUSY     0
+#define NRF24L01_TX_STATUS_MAX_RT   1
+#define NRF24L01_TX_STATUS_TX_DS    2
+#define NRF24L01_TX_STATUS_TX_AP    3
 
-size_t NRF24L01_dataAvailable(void);
-size_t NRF24L01_getData(uint8_t* data, size_t* pipe);
 
-int NRF24L01_writeAckPayload(uint8_t* data, size_t len);
+
+void NRF24L01_init(uint8_t* csnDDR, uint8_t* csnPORT, uint8_t csnPin, uint8_t* ceDDR, uint8_t* cePORT, uint8_t cePin);
+
+void NRF24L01_sendData(uint8_t* data, uint8_t len);
+uint8_t NRF24L01_getTXStatus(void);
+void NRF24L01_setAcknowledgePayload(uint8_t pipe, uint8_t* data, uint8_t len);
+
+bool NRF24L01_dataAvailable(void);
+uint8_t NRF24L01_getData(uint8_t* data, uint8_t* pipe);
 
 
 
