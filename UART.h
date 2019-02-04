@@ -46,11 +46,13 @@
 
 
 
+extern FILE UART_out;
+extern FILE UART_in;
+
+
+
 bool UART_init(uint32_t baud, bool stdToUart);
 bool UART_setBaud(uint32_t baud);
-
-FILE* UART_getOut(void);
-FILE* UART_getIn(void);
 
 void UART_transmit(uint8_t data);
 void UART_transmitBurst(uint8_t* data, size_t len);

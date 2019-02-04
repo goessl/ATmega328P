@@ -54,17 +54,8 @@ static int UART_getc(FILE* stream)
     return UART_receive();
 }
 
-static FILE UART_out = FDEV_SETUP_STREAM(UART_putc, NULL, _FDEV_SETUP_WRITE);
-static FILE UART_in = FDEV_SETUP_STREAM(NULL, UART_getc, _FDEV_SETUP_READ);
-
-FILE* UART_getOut(void)
-{
-    return &UART_out;
-}
-FILE* UART_getIn(void)
-{
-    return &UART_in;
-}
+FILE UART_out = FDEV_SETUP_STREAM(UART_putc, NULL, _FDEV_SETUP_WRITE);
+FILE UART_in = FDEV_SETUP_STREAM(NULL, UART_getc, _FDEV_SETUP_READ);
 
 
 

@@ -67,17 +67,8 @@ static int UART2_getc(FILE* stream)
     return c;
 }
 
-static FILE UART2_out = FDEV_SETUP_STREAM(UART2_putc, NULL, _FDEV_SETUP_WRITE);
-static FILE UART2_in = FDEV_SETUP_STREAM(NULL, UART2_getc, _FDEV_SETUP_READ);
-
-FILE* UART2_getOut(void)
-{
-    return &UART2_out;
-}
-FILE* UART2_getIn(void)
-{
-    return &UART2_in;
-}
+FILE UART2_out = FDEV_SETUP_STREAM(UART2_putc, NULL, _FDEV_SETUP_WRITE);
+FILE UART2_in = FDEV_SETUP_STREAM(NULL, UART2_getc, _FDEV_SETUP_READ);
 
 
 

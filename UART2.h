@@ -54,10 +54,12 @@
 
 
 
-void UART2_init(void);
+extern FILE UART2_out;
+extern FILE UART2_in;
 
-FILE* UART2_getOut(void);
-FILE* UART2_getIn(void);
+
+
+void UART2_init(void);
 
 size_t UART2_transmitAvailable(void);
 void UART2_transmitFlush(void);
