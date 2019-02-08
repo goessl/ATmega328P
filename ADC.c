@@ -118,5 +118,6 @@ ISR(ADC_vect)
         ADC_next = 0;
     //ADC_next = (ADC_next + 1) % ADC_N;
     
-    ADMUX = (ADMUX & 0xE0) | (ADC_next & 0x0F);
+    ADMUX = (ADMUX & ((1 << REFS0) | (1 << REFS0) | (1 << ADLAR))) |
+        (ADC_next & ((1 << MUX3) | (1 << MUX2) | (1 << MUX1) | (1 << MUX0)));
 }
