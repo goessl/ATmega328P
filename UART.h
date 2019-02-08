@@ -42,8 +42,12 @@
 
 
 
-#define BAUD_TOL 2
+#ifndef UART_BAUD_TOL
+    #define UART_BAUD_TOL 2
+#endif
 
+#define UART_BAUD_MIN   ((uint32_t)(F_CPU / (16 * ((uint32_t)UINT16_MAX + 1))))
+#define UART_BAUD_MAX   ((uint32_t)(F_CPU / (8 * (0 + 1))))
 
 
 extern FILE UART_out;

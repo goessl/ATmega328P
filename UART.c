@@ -41,6 +41,19 @@
 #endif
 
 
+#define UART_UBRR_TO_BAUD(ubrr)     (F_CPU / (16 * ((uint32_t)(ubrr) + 1)))
+#define UART_UBRR_TO_BAUD_2X(ubrr)  (F_CPU / (8 * ((uint32_t)(ubrr) + 1)))
+
+#define UART_BAUD_TO_UBRR(baud)     (F_CPU / (16 * (baud)) - 1)
+#define UART_BAUD_TO_UBRR_2X(baud)  (F_CPU / (8 * (baud)) - 1)
+
+
+#define UART_BAUD_MIN_N2X   UART_UBRR_TO_BAUD(UINT16_MAX)
+#define UART_BAUD_MAX_N2X   UART_UBRR_TO_BAUD(0)
+#define UART_BAUD_MIN_W2X   UART_UBRR_TO_BAUD_2X(UINT16_MAX)
+#define UART_BAUD_MAX_W2X   UART_UBRR_TO_BAUD_2X(0)
+
+
 
 static int UART_putc(char c, FILE* stream)
 {
@@ -48,6 +61,7 @@ static int UART_putc(char c, FILE* stream)
     UART_transmit(c);
     return 0;
 }
+
 static int UART_getc(FILE* stream)
 {
     (void)stream;
@@ -79,20 +93,35 @@ bool UART_init(uint32_t baud, bool stdToUart)
 
 bool UART_setBaud(uint32_t baud)
 {
-    uint16_t ubrrValue = (F_CPU + 8*baud) / (16*baud) - 1;
+    bool use2x;
+    uint16_t ubrr;
+    uint32_t baudReal;
     
-    if(100 * F_CPU > 16 * (ubrrValue + 1) * (100 + BAUD_TOL) * baud
-        || 100 * F_CPU < 16 * (ubrrValue + 1) * (100 - BAUD_TOL) * baud)
+    
+    
+    if(baud < UART_BAUD_MIN_W2X) //Only possible without use2x
     {
-        ubrrValue = (F_CPU + 4*baud) / (8*baud) - 1;
-        UCSR0A |= (1 << U2X0);
+        use2x = false;
+        ubrr = UART_BAUD_TO_UBRR(baud);
+        baudReal = UART_UBRR_TO_BAUD(ubrr);
+    }
+    else
+    {
+        use2x = true;
+        ubrr = UART_BAUD_TO_UBRR_2X(baud);
+        baudReal = UART_UBRR_TO_BAUD_2X(ubrr);
     }
     
-    UBRR0H = ubrrValue >> 8;
-    UBRR0L = ubrrValue & 0xFF;
+    if(use2x)
+        UCSR0A |= (1 << U2X0);
+    else
+        UCSR0A &= ~(1 << U2X0);
+    UBRR0 = ubrr;
     
-    return 100 * F_CPU > 8 * (ubrrValue + 1) * (100 + BAUD_TOL) * baud
-        || 100 * F_CPU < 8 * (ubrrValue + 1) * (100 - BAUD_TOL) * baud;
+    
+    //Check error: (int32_t)(100 * baudReal / baud) - 100 > UART_BAUD_TOL
+    return 100 * baudReal > baud * (100 + UART_BAUD_TOL)
+        || 100 * baudReal < baud * (100 - UART_BAUD_TOL);
 }
 
 
