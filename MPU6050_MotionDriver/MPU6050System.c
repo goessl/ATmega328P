@@ -49,7 +49,7 @@
 
 #if MPU6050SYSTEM_TIMER == 0
     #define MPU6050SYSTEM_TIMER_TOP 0xFF
-    #define MPU6050SYSTEM_ISR TIMER0_COMPA_vect
+    #define MPU6050SYSTEM_vect TIMER0_COMPA_vect
     
     #if MPU6050SYSTEM_MS_PER_SECOND > F_CPU
         #error "MPU6050SYSTEM_MS_PER_SECOND to high!"
@@ -84,7 +84,7 @@
     
 #elif MPU6050SYSTEM_TIMER == 1
     #define MPU6050SYSTEM_TIMER_TOP 0xFFFF
-    #define MPU6050SYSTEM_ISR TIMER1_COMPA_vect
+    #define MPU6050SYSTEM_vect TIMER1_COMPA_vect
     
     #if MPU6050SYSTEM_MS_PER_SECOND > F_CPU
         #error "MPU6050SYSTEM_MS_PER_SECOND to high!"
@@ -119,7 +119,7 @@
     
 #elif MPU6050SYSTEM_TIMER == 2
     #define MPU6050SYSTEM_TIMER_TOP 0xFF
-    #define MPU6050SYSTEM_ISR TIMER2_COMPA_vect
+    #define MPU6050SYSTEM_vect TIMER2_COMPA_vect
     
     #if MPU6050SYSTEM_MS_PER_SECOND > F_CPU
         #error "MPU6050SYSTEM_MS_PER_SECOND to high!"
@@ -189,9 +189,6 @@ void MPU6050System_init(void)
         TCCR2B |= (CS22_VALUE << CS22) | (CS21_VALUE << CS21) | (CS20_VALUE << CS20);
         TIMSK2 |= (1 << OCIE2A);
     #endif
-    
-    
-    TWI_init();
 }
 
 
@@ -244,7 +241,7 @@ void MPU6050System_logE(const char* fmt, ...)
 
 
 
-ISR(MPU6050SYSTEM_ISR)
+ISR(MPU6050SYSTEM_vect)
 {
     MPU6050System_ms++;
 }

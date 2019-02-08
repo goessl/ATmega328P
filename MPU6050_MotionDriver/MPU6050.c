@@ -133,7 +133,7 @@ int MPU6050_init(void)
 }
 
 
-int MPU6050_getInterruptFlag(void)
+int MPU6050_dataAvailable(void)
 {
     if(MPU6050_interruptFlag)
     {
@@ -215,6 +215,16 @@ void MPU6050_quaternionToEuler(double* q, double* e)
         e[0] = atan2(g[1], -1.0 * sqrt(0.001*g[0]*g[0] + g[2]*g[2]));
     }
 }
+
+
+void MPU6050_readEuler(double* e, unsigned long* timestamp, uint8_t* more)
+{
+    double g[3], a[3], q[4];
+    
+    MPU6050_readAllScaled(g, a, q, timestamp, more);
+    MPU6050_quaternionToEuler(q, e);
+}
+
 
 
 

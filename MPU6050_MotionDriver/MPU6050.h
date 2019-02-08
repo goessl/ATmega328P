@@ -51,13 +51,15 @@
 
 int MPU6050_init(void);
 
-int MPU6050_getInterruptFlag(void);
+int MPU6050_dataAvailable(void);
 
 void MPU6050_readAllRaw(int16_t* g, int16_t* a, int32_t* q, unsigned long* timestamp, uint8_t* more);
 void MPU6050_readAllScaled(double* g, double* a, double* q, unsigned long* timestamp, uint8_t* more);
 
 void MPU6050_quaternionToGravity(double* q, double* g);
 void MPU6050_quaternionToEuler(double* q, double* e);
+
+void MPU6050_readEuler(double* e, unsigned long* timestamp, uint8_t* more);
 
 
 
