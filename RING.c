@@ -33,7 +33,7 @@
 
 
 
-#define RING_INC_ROLL_OVER(n, e, s) ((n+1 >= e)?s:n+1)
+#define RING_INC_ROLL_OVER(n, s, e) ((n+1 >= e)?s:n+1)
 
 
 
@@ -50,7 +50,7 @@ int RING_isEmpty(RING_t ring)
 
 int RING_isFull(RING_t ring)
 {
-    return RING_INC_ROLL_OVER(ring.write, ring.end, ring.buf) == ring.read;
+    return RING_INC_ROLL_OVER(ring.write, ring.buf, ring.end) == ring.read;
 }
 
 size_t RING_pushAvailable(RING_t ring)
@@ -76,7 +76,7 @@ int RING_push(RING_t* ring, uint8_t data)
         return 1;
     
     *ring->write = data;
-    ring->write = RING_INC_ROLL_OVER(ring->write, ring->end, ring->buf);
+    ring->write = RING_INC_ROLL_OVER(ring->write, ring->buf, ring->end);
     
     return 0;
 }
@@ -84,11 +84,11 @@ int RING_push(RING_t* ring, uint8_t data)
 int RING_pushOver(RING_t* ring, uint8_t data)
 {
     *ring->write = data;
-    ring->write = RING_INC_ROLL_OVER(ring->write, ring->end, ring->buf);
+    ring->write = RING_INC_ROLL_OVER(ring->write, ring->buf, ring->end);
     
     if(ring->read == ring->write)
     {
-        ring->read = RING_INC_ROLL_OVER(ring->read, ring->end, ring->buf);
+        ring->read = RING_INC_ROLL_OVER(ring->read, ring->buf, ring->end);
         return 1;
     }
     
@@ -102,7 +102,7 @@ int RING_pop(RING_t* ring, uint8_t* data)
         return 1;
     
     *data = *ring->read;
-    ring->read = RING_INC_ROLL_OVER(ring->read, ring->end, ring->buf);
+    ring->read = RING_INC_ROLL_OVER(ring->read, ring->buf, ring->end);
     
     return 0;
 }
