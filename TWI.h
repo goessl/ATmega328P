@@ -35,14 +35,9 @@
 
 
 
-#define TWI_FREQUENCY_STANDARD_MODE     100000
-#define TWI_FREQUENCY_FAST_MODE         400000
-#define TWI_FREQUENCY_FAST_MODE_PLUS    1000000
-#define TWI_FREQUENCY_HIGH_SPEED_MODE   3400000
-#define TWI_FREQUENCY_ULTRA_FAST_MODE   5000000
-
-#define TWI_ADDRESS_W(x)    ((x << 1) & ~0x01)
-#define TWI_ADDRESS_R(x)    ((x << 1) | 0x01)
+#ifndef TWI_FREQUENCY
+    #define TWI_FREQUENCY 400000
+#endif
 
 
 
@@ -52,7 +47,7 @@
 
 
 
-void TWI_init(uint32_t frequency);
+void TWI_init(void);
 
 bool TWI_start(void);
 bool TWI_repStart(void);
@@ -71,8 +66,10 @@ bool TWI_readNoAckBurst(uint8_t* data, size_t len);
 
 bool TWI_writeToSlave(uint8_t address, uint8_t* data, size_t len);
 bool TWI_readFromSlave(uint8_t address, uint8_t* data, size_t len);
-bool TWI_writeToSlaveRegister(uint8_t address, uint8_t reg, uint8_t* data, size_t len);
-bool TWI_readFromSlaveRegister(uint8_t address, uint8_t reg, uint8_t* data, size_t len);
+bool TWI_writeToSlaveRegister(uint8_t address, uint8_t reg,
+    uint8_t* data, size_t len);
+bool TWI_readFromSlaveRegister(uint8_t address, uint8_t reg,
+    uint8_t* data, size_t len);
 
 
 

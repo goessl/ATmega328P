@@ -42,31 +42,42 @@
 #endif
 
 
+#if TWI_FREQUENCY > F_CPU / 16
+    #error "TWI_FREQUENCY too high!"
+#elif (F_CPU/TWI_FREQUENCY - 16) / (2 * 1) <= 0xFF
+    #define TWI_PRESCALER 1
+    #define TWPS0_VALUE 0
+    #define TWPS1_VALUE 0
+#elif (F_CPU/TWI_FREQUENCY - 16) / (2 * 4) <= 0xFF
+    #define TWI_PRESCALER 4
+    #define TWPS0_VALUE 1
+    #define TWPS1_VALUE 0
+#elif (F_CPU/TWI_FREQUENCY - 16) / (2 * 16) <= 0xFF
+    #define TWI_PRESCALER 16
+    #define TWPS0_VALUE 0
+    #define TWPS1_VALUE 1
+#elif (F_CPU/TWI_FREQUENCY - 16) / (2 * 64) <= 0xFF
+    #define TWI_PRESCALER 64
+    #define TWPS0_VALUE 1
+    #define TWPS1_VALUE 1
+#else
+    #error "TWI_FREQUENCY too low!"
+#endif
 
-void TWI_init(uint32_t frequency)
+#define TWBR_VALUE ((F_CPU/TWI_FREQUENCY - 16) / (2 * TWI_PRESCALER))
+
+
+#define TWI_ADDRESS_W(x)    ((x << 1) & ~0x01)
+#define TWI_ADDRESS_R(x)    ((x << 1) | 0x01)
+
+
+
+void TWI_init(void)
 {
-    uint8_t prescaler = 0, twpsValue = 0;
+    TWBR = TWBR_VALUE;
+    TWSR = (TWPS1_VALUE << TWPS1) | (TWPS0_VALUE << TWPS0);
     
-    
-    
-    if((F_CPU/frequency - 16) / (2 * 1) <= 0xFF) {
-        prescaler = 1;
-        twpsValue = 0;
-    } else if((F_CPU/frequency - 16) / (2 * 4) <= 0xFF) {
-        prescaler = 4;
-        twpsValue = (1 << TWPS0);
-    } else if((F_CPU/frequency - 16) / (2 * 16) <= 0xFF) {
-        prescaler = 16;
-        twpsValue = (1 << TWPS1);
-    } else if((F_CPU/frequency - 16) / (2 * 64) <= 0xFF) {
-        prescaler = 64;
-        twpsValue = (1 << TWPS1) | (1 << TWPS0);
-    }
-    
-    
-    TWBR = ((F_CPU/frequency - 16) / (2 * prescaler));
-    TWSR |= twpsValue;
-    PORTC |= (1 << PORTC4) | (1 << PORTC5);
+    TWCR |= (1 << TWEN);
 }
 
 
