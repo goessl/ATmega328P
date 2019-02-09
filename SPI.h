@@ -35,13 +35,26 @@
 
 
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 
 
-void SPI_init(uint32_t frequency, bool lsbFirst, bool cpol, bool cpha);
+#ifndef SPI_FREQUENCY
+    #define SPI_FREQUENCY 1000000
+#endif
+
+#ifndef SPI_MODE
+    #define SPI_MODE 0
+#endif
+
+#ifndef SPI_DORD
+    #define SPI_DORD 0
+#endif
+
+
+
+void SPI_init(void);
 
 uint8_t SPI_transmit(uint8_t data);
 void SPI_transmitBurst(uint8_t* out, uint8_t* in, size_t len);

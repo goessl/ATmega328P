@@ -31,6 +31,7 @@
 
 
 #include <avr/io.h>
+#include <stdbool.h>
 #include "SPI.h"
 
 
@@ -41,52 +42,96 @@
 #endif
 
 
+#if F_CPU / 2 <= SPI_FREQUENCY
+    #define SPI_PRESCALER 2
+    #define SPR0_VALUE 0
+    #define SPR1_VALUE 0
+    #define SPI2X_VALUE 1
+#elif F_CPU / 4 <= SPI_FREQUENCY
+    #define SPI_PRESCALER 4
+    #define SPR0_VALUE 0
+    #define SPR1_VALUE 0
+    #define SPI2X_VALUE 0
+#elif F_CPU / 8 <= SPI_FREQUENCY
+    #define SPI_PRESCALER 8
+    #define SPR0_VALUE 1
+    #define SPR1_VALUE 0
+    #define SPI2X_VALUE 1
+#elif F_CPU / 16 <= SPI_FREQUENCY
+    #define SPI_PRESCALER 16
+    #define SPR0_VALUE 1
+    #define SPR1_VALUE 0
+    #define SPI2X_VALUE 0
+#elif F_CPU / 32 <= SPI_FREQUENCY
+    #define SPI_PRESCALER 32
+    #define SPR0_VALUE 0
+    #define SPR1_VALUE 1
+    #define SPI2X_VALUE 1
+#elif F_CPU / 64 <= SPI_FREQUENCY
+    #define SPI_PRESCALER 64
+    #define SPR0_VALUE 1
+    #define SPR1_VALUE 1
+    #define SPI2X_VALUE 1
+#elif F_CPU / 128 <= SPI_FREQUENCY
+    #define SPI_PRESCALER 128
+    #define SPR0_VALUE 1
+    #define SPR1_VALUE 1
+    #define SPI2X_VALUE 0
+#else
+    #error "SPI_FREQUENCY to low!"
+#endif
 
-void SPI_init(uint32_t frequency, bool lsbFirst, bool cpol, bool cpha)
+#if SPI_MODE == 0
+    #define CPOL_VALUE 0
+    #define CPHA_VALUE 0
+#elif SPI_MODE == 1
+    #define CPOL_VALUE 0
+    #define CPHA_VALUE 1
+#elif SPI_MODE == 2
+    #define CPOL_VALUE 1
+    #define CPHA_VALUE 0
+#elif SPI_MODE == 3
+    #define CPOL_VALUE 1
+    #define CPHA_VALUE 1
+#else
+    #error "No valid SPI_MODE defined!"
+#endif
+
+#if SPI_DORD == 0
+    #define DORD_VALUE 0
+#elif SPI_DORD == 1
+    #define DORD_VALUE 1
+#else
+    #error "No valid SPI_DORD defined!"
+#endif
+
+
+
+void SPI_init(void)
 {
-    bool spi2xValue = false;
-    uint8_t sprValue = 0;
-    
-    
-    
     DDRB |= (1 << DDB2) | (1 << DDB3) | (1 << DDB5);
     //DDRB &= ~(1 << DDB4);
     
     
-    if(F_CPU / 2 <= frequency) {
-        spi2xValue = true;
-        sprValue = 0;
-    } else if(F_CPU / 4 <= frequency) {
-        spi2xValue = false;
-        sprValue = 0;
-    } else if(F_CPU / 8 <= frequency) {
-        spi2xValue = true;
-        sprValue = (1 << SPR0);
-    } else if(F_CPU / 16 <= frequency) {
-        spi2xValue = false;
-        sprValue = (1 << SPR0);
-    } else if(F_CPU / 32 <= frequency) {
-        spi2xValue = true;
-        sprValue = (1 << SPR1);
-    } else if(F_CPU / 64 <= frequency) {
-        spi2xValue = false;
-        sprValue = (1 << SPR1);
-    } else if(F_CPU / 128 <= frequency) {
-        spi2xValue = false;
-        sprValue = (1 << SPR1) | (1 << SPR0);
-    }
-    
-    if(spi2xValue)
-        SPSR |= (1 << SPI2X);
-    SPCR |= (1 << SPE) | ((lsbFirst?1:0) << DORD) | (1 << MSTR)
-        | ((cpol?1:0) << CPOL) | ((cpha?1:0) << CPHA) | sprValue;
+    SPSR |= (SPI2X_VALUE << SPI2X);
+    SPCR |= (1 << SPE) | (DORD_VALUE << DORD) | (1 << MSTR)
+        | (CPOL_VALUE << CPOL) | (CPHA_VALUE << CPHA)
+        | (SPR1_VALUE << SPR1) | (SPR0_VALUE << SPR0);
 }
+
+
+
+static bool SPI_isTransferComplete(void)
+{
+    return SPSR & (1 << SPIF);
+}
+
 
 
 uint8_t SPI_transmit(uint8_t data)
 {
     SPDR = data;
-    while(~SPSR & (1 << SPIF))
+    while(!SPI_isTransferComplete())
         ;
     
     return SPDR;
