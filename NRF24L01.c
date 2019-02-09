@@ -187,7 +187,7 @@ static volatile uint8_t* NRF24L01_cePORT;
 static volatile uint8_t NRF24L01_cePin;
 
 static volatile uint8_t NRF24L01_rxData[NRF24L01_MAX_PAYLOAD];
-static volatile uint8_t NRF24L01_rxLen = 0, NRF24L01_rxPipe;
+static volatile uint8_t NRF24L01_rxLen = 0;
 static volatile uint8_t NRF24L01_txStatus = NRF24L01_TX_STATUS_BUSY;
 
 
@@ -421,7 +421,10 @@ static bool NRF24L01_getAutoAcknowledgeEnabled(uint8_t pipe)
 
 static void NRF24L01_setAutoAcknowledgeEnabled(uint8_t pipe, bool enabled)
 {
-    NRF24L01_writeBit(NRF24L01_RA_EN_AA, NRF24L01_BIT_ENAA_P(pipe), enabled);
+    if(pipe == NRF24L01_PIPES_N)
+        NRF24L01_writeBits(NRF24L01_RA_EN_AA, NRF24L01_BIT_ENAA_P0, NRF24L01_PIPES_N, (enabled)?0xFF:0x00);
+    else
+        NRF24L01_writeBit(NRF24L01_RA_EN_AA, NRF24L01_BIT_ENAA_P(pipe), enabled);
 }
 
 //Enable RX pipe
@@ -432,7 +435,10 @@ static bool NRF24L01_getPipeEnabled(uint8_t pipe)
 
 static void NRF24L01_setPipeEnabled(uint8_t pipe, bool enabled)
 {
-    NRF24L01_writeBit(NRF24L01_RA_EN_RXADDR, NRF24L01_BIT_ERX_P(pipe), enabled);
+    if(pipe == NRF24L01_PIPES_N)
+        NRF24L01_writeBits(NRF24L01_RA_EN_RXADDR, NRF24L01_BIT_ERX_P0, NRF24L01_PIPES_N, (enabled)?0xFF:0x00);
+    else
+        NRF24L01_writeBit(NRF24L01_RA_EN_RXADDR, NRF24L01_BIT_ERX_P(pipe), enabled);
 }
 
 //Address width
@@ -668,7 +674,10 @@ static bool NRF24L01_getDynamicPayloadPipeEnabled(uint8_t pipe)
 
 static void NRF24L01_setDynamicPayloadPipeEnabled(uint8_t pipe, bool enabled)
 {
-    NRF24L01_writeBit(NRF24L01_RA_DYNPD, NRF24L01_BIT_DPL_P(pipe), enabled);
+    if(pipe == NRF24L01_PIPES_N)
+        NRF24L01_writeBits(NRF24L01_RA_DYNPD, NRF24L01_BIT_DPL_P0, NRF24L01_PIPES_N, (enabled)?0xFF:0x00);
+    else
+        NRF24L01_writeBit(NRF24L01_RA_DYNPD, NRF24L01_BIT_DPL_P(pipe), enabled);
 }
 
 //Features
@@ -718,23 +727,22 @@ void NRF24L01_init(uint8_t* csnDDR, uint8_t* csnPORT, uint8_t csnPin, uint8_t* c
     
     
     #if NRF24L01_INTERRUPT == 0
-        //EICRA |= (1 << ISC01);
         EIMSK |= (1 << INT0);
     #elif NRF24L01_INTERRUPT == 1
-        //EICRA |= (1 << ISC11);
         EIMSK |= (1 << INT1);
     #endif
     
     
-    SPI_init(800000, 0, 0, 0);
+    //10Mhz, Msb first, Mode 0
+    //SPI_init(10000000, 0, 0, 0);
     
     
     
     _delay_ms(100);
     
     //Close all pipes
-    NRF24L01_writeBits(NRF24L01_RA_EN_RXADDR, NRF24L01_BIT_ERX_P0, NRF24L01_PIPES_N, 0x00);
-    NRF24L01_writeBits(NRF24L01_RA_EN_AA, NRF24L01_BIT_ENAA_P0, NRF24L01_PIPES_N, 0x00);
+    NRF24L01_setPipeEnabled(NRF24L01_PIPES_N, false);
+    NRF24L01_setAutoAcknowledgeEnabled(NRF24L01_PIPES_N, false);
     
     
     //Open pipe 0
@@ -756,7 +764,7 @@ void NRF24L01_init(uint8_t* csnDDR, uint8_t* csnPORT, uint8_t csnPin, uint8_t* c
         NRF24L01_setAcknowledgePayloadEnabled(true);
     }
     NRF24L01_setDynamicPayloadEnabled(true);
-    NRF24L01_writeBits(NRF24L01_RA_DYNPD, NRF24L01_BIT_DPL_P0, NRF24L01_PIPES_N, 0xFF);
+    NRF24L01_setDynamicPayloadPipeEnabled(NRF24L01_PIPES_N, true);
     //Enable RX
     NRF24L01_setPrimRXEnabled(true);
     
@@ -776,6 +784,8 @@ void NRF24L01_sendData(uint8_t* data, uint8_t len)
 {
     NRF24L01_setCE(false);
     
+    NRF24L01_flushTX();
+    
     NRF24L01_writeTXPayload(data, len);
     NRF24L01_setPrimRXEnabled(false);
     
@@ -791,9 +801,9 @@ uint8_t NRF24L01_getTXStatus(void)
     return NRF24L01_txStatus;
 }
 
-void NRF24L01_setAcknowledgePayload(uint8_t pipe, uint8_t* data, uint8_t len)
+void NRF24L01_setAcknowledgePayload(uint8_t* data, uint8_t len)
 {
-    NRF24L01_writeAcknowledgePayload(pipe, data, len);
+    NRF24L01_writeAcknowledgePayload(0, data, len);
 }
 
 
@@ -802,12 +812,11 @@ bool NRF24L01_dataAvailable(void)
     return NRF24L01_rxLen > 0;
 }
 
-uint8_t NRF24L01_getData(uint8_t* data, uint8_t* pipe)
+uint8_t NRF24L01_getData(uint8_t* data)
 {
     uint8_t temp = NRF24L01_rxLen;
     
     memcpy(data, (uint8_t*)NRF24L01_rxData, NRF24L01_rxLen);
-    *pipe = NRF24L01_rxPipe;
     NRF24L01_rxLen = 0;
     
     return temp;
@@ -823,9 +832,7 @@ ISR(NRF24L01_vect)
         case (1 << NRF24L01_BIT_RX_DR):
             while(!NRF24L01_getRXFIFOEmpty())
             {
-                NRF24L01_rxPipe = NRF24L01_getRXPipe();
-                
-                if(NRF24L01_rxPipe < NRF24L01_PIPES_N)
+                if(NRF24L01_getRXPipe() < NRF24L01_PIPES_N)
                 {
                     NRF24L01_rxLen = NRF24L01_getRXPayloadWidth();
                     NRF24L01_readRXPayload((uint8_t*)NRF24L01_rxData, NRF24L01_rxLen);
@@ -844,9 +851,7 @@ ISR(NRF24L01_vect)
         case ((1 << NRF24L01_BIT_RX_DR) | (1 << NRF24L01_BIT_TX_DS)):
             while(!NRF24L01_getRXFIFOEmpty())
             {
-                NRF24L01_rxPipe = NRF24L01_getRXPipe();
-                
-                if(NRF24L01_rxPipe < NRF24L01_PIPES_N)
+                if(NRF24L01_getRXPipe() < NRF24L01_PIPES_N)
                 {
                     NRF24L01_rxLen = NRF24L01_getRXPayloadWidth();
                     NRF24L01_readRXPayload((uint8_t*)NRF24L01_rxData, NRF24L01_rxLen);
