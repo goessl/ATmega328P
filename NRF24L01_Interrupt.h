@@ -1,5 +1,5 @@
 ﻿/*
- * NRF24L01.h
+ * NRF24L01_Interrupt.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P, NRF24L01+
@@ -40,6 +40,10 @@
 
 
 
+#ifndef NRF24L01_INTERRUPT
+    #define NRF24L01_INTERRUPT 0
+#endif
+
 #define NRF24L01_MAX_PAYLOAD 32
 #define NRF24L01_PIPES_N 6
 
@@ -53,7 +57,8 @@
 //SPI: 10Mhz, Msb first, Mode 0
 void NRF24L01_init(uint8_t* csnDDR, uint8_t* csnPORT, uint8_t csnPin, uint8_t* ceDDR, uint8_t* cePORT, uint8_t cePin);
 
-bool NRF24L01_sendData(uint8_t* data, uint8_t len);
+void NRF24L01_sendData(uint8_t* data, uint8_t len);
+uint8_t NRF24L01_getTXStatus(void);
 void NRF24L01_setAcknowledgePayload(uint8_t* data, uint8_t len);
 
 bool NRF24L01_dataAvailable(void);

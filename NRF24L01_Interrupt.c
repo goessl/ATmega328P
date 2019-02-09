@@ -1,5 +1,5 @@
 ﻿/*
- * NRF24L01.c
+ * NRF24L01_Interrupt.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P, NRF24L01+
@@ -34,8 +34,17 @@
 #include <util/delay.h>
 #include <string.h>
 #include "SPI.h"
-#include "NRF24L01.h"
+#include "NRF24L01_Interrupt.h"
 
+
+
+#if NRF24L01_INTERRUPT == 0
+    #define NRF24L01_vect INT0_vect
+#elif NRF24L01_INTERRUPT == 1
+    #define NRF24L01_vect INT1_vect
+#else
+    #error "No valid NRF24L01_INTERRUPT selected!"
+#endif
 
 
 //Commands
@@ -176,6 +185,10 @@ static volatile uint8_t* NRF24L01_csnPORT;
 static volatile uint8_t NRF24L01_csnPin;
 static volatile uint8_t* NRF24L01_cePORT;
 static volatile uint8_t NRF24L01_cePin;
+
+static volatile uint8_t NRF24L01_rxData[NRF24L01_MAX_PAYLOAD];
+static volatile uint8_t NRF24L01_rxLen = 0;
+static volatile uint8_t NRF24L01_txStatus = NRF24L01_TX_STATUS_BUSY;
 
 
 
@@ -713,6 +726,13 @@ void NRF24L01_init(uint8_t* csnDDR, uint8_t* csnPORT, uint8_t csnPin, uint8_t* c
     NRF24L01_setCE(false);
     
     
+    #if NRF24L01_INTERRUPT == 0
+        EIMSK |= (1 << INT0);
+    #elif NRF24L01_INTERRUPT == 1
+        EIMSK |= (1 << INT1);
+    #endif
+    
+    
     //10Mhz, Msb first, Mode 0
     //SPI_init(10000000, 0, 0, 0);
     
@@ -760,64 +780,98 @@ void NRF24L01_init(uint8_t* csnDDR, uint8_t* csnPORT, uint8_t csnPin, uint8_t* c
 
 
 
-bool NRF24L01_sendData(uint8_t* data, uint8_t len)
+void NRF24L01_sendData(uint8_t* data, uint8_t len)
 {
-    uint8_t interrupts;
-    
-    
-    
     NRF24L01_setCE(false);
     
     NRF24L01_flushTX();
-    NRF24L01_writeTXPayload(data, len);
     
+    NRF24L01_writeTXPayload(data, len);
     NRF24L01_setPrimRXEnabled(false);
+    
     NRF24L01_setCE(true);
     _delay_us(10);
     NRF24L01_setCE(false);
     
-    
-    do
-    {
-        interrupts = NRF24L01_getInterrupts();
-    }
-    while(!(interrupts & ((1 << NRF24L01_BIT_TX_DS) | (1 << NRF24L01_BIT_MAX_RT))));
-    NRF24L01_clearTXDSInterrupt();
-    NRF24L01_clearMAXRTInterrupt();
-    
-    
-    if(interrupts & (1 << NRF24L01_BIT_MAX_RT))
-        NRF24L01_flushTX();
-    
-    NRF24L01_setPrimRXEnabled(true);
-    NRF24L01_setCE(true);
-    
-    
-    
-    return interrupts & (1 << NRF24L01_BIT_MAX_RT);
+    NRF24L01_txStatus = NRF24L01_TX_STATUS_BUSY;
+}
+
+uint8_t NRF24L01_getTXStatus(void)
+{
+    return NRF24L01_txStatus;
 }
 
 void NRF24L01_setAcknowledgePayload(uint8_t* data, uint8_t len)
 {
-    NRF24L01_flushTX();
     NRF24L01_writeAcknowledgePayload(0, data, len);
 }
 
 
 bool NRF24L01_dataAvailable(void)
 {
-    return !NRF24L01_getRXFIFOEmpty();
+    return NRF24L01_rxLen > 0;
 }
 
 uint8_t NRF24L01_getData(uint8_t* data)
 {
-    uint8_t len = 0;
+    uint8_t temp = NRF24L01_rxLen;
     
-    if(NRF24L01_getRXPipe() < NRF24L01_PIPES_N)
+    memcpy(data, (uint8_t*)NRF24L01_rxData, NRF24L01_rxLen);
+    NRF24L01_rxLen = 0;
+    
+    return temp;
+}
+
+
+
+ISR(NRF24L01_vect)
+{
+    switch(NRF24L01_getClearInterrupts())
     {
-        len = NRF24L01_getRXPayloadWidth();
-        NRF24L01_readRXPayload(data, len);
+        //Data received
+        case (1 << NRF24L01_BIT_RX_DR):
+            while(!NRF24L01_getRXFIFOEmpty())
+            {
+                if(NRF24L01_getRXPipe() < NRF24L01_PIPES_N)
+                {
+                    NRF24L01_rxLen = NRF24L01_getRXPayloadWidth();
+                    NRF24L01_readRXPayload((uint8_t*)NRF24L01_rxData, NRF24L01_rxLen);
+                }
+            }
+            break;
+        
+        //Data sent
+        case (1 << NRF24L01_BIT_TX_DS):
+            NRF24L01_txStatus = NRF24L01_TX_STATUS_TX_DS;
+            NRF24L01_setPrimRXEnabled(true);
+            NRF24L01_setCE(true);
+            break;
+        
+        //Data sent & acknowledge payload received
+        case ((1 << NRF24L01_BIT_RX_DR) | (1 << NRF24L01_BIT_TX_DS)):
+            while(!NRF24L01_getRXFIFOEmpty())
+            {
+                if(NRF24L01_getRXPipe() < NRF24L01_PIPES_N)
+                {
+                    NRF24L01_rxLen = NRF24L01_getRXPayloadWidth();
+                    NRF24L01_readRXPayload((uint8_t*)NRF24L01_rxData, NRF24L01_rxLen);
+                }
+            }
+            NRF24L01_txStatus = NRF24L01_TX_STATUS_TX_AP;
+            NRF24L01_setPrimRXEnabled(true);
+            NRF24L01_setCE(true);
+            break;
+        
+        //Max retries reached
+        case (1 << NRF24L01_BIT_MAX_RT):
+            NRF24L01_flushTX();
+            NRF24L01_txStatus = NRF24L01_TX_STATUS_MAX_RT;
+            NRF24L01_setPrimRXEnabled(true);
+            NRF24L01_setCE(true);
+            break;
+        
+        
+        default:
+            break;
     }
-    
-    return len;
 }
