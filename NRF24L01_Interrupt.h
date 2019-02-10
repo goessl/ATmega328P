@@ -16,8 +16,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  * 
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -55,7 +55,8 @@
 
 
 //SPI: 10Mhz, Msb first, Mode 0
-void NRF24L01_init(uint8_t* csnDDR, uint8_t* csnPORT, uint8_t csnPin, uint8_t* ceDDR, uint8_t* cePORT, uint8_t cePin);
+void NRF24L01_init(uint8_t* csnDDR, uint8_t* csnPORT, uint8_t csnPin,
+    uint8_t* ceDDR, uint8_t* cePORT, uint8_t cePin);
 
 void NRF24L01_sendData(uint8_t* data, uint8_t len);
 uint8_t NRF24L01_getTXStatus(void);

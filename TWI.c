@@ -226,7 +226,8 @@ bool TWI_readFromSlave(uint8_t address, uint8_t* data, size_t len)
     return 0;
 }
 
-bool TWI_writeToSlaveRegister(uint8_t address, uint8_t reg, uint8_t* data, size_t len)
+bool TWI_writeToSlaveRegister(uint8_t address, uint8_t reg,
+    uint8_t* data, size_t len)
 {
     if(TWI_start())
         return 1;
@@ -243,7 +244,8 @@ bool TWI_writeToSlaveRegister(uint8_t address, uint8_t reg, uint8_t* data, size_
     return 0;
 }
 
-bool TWI_readFromSlaveRegister(uint8_t address, uint8_t reg, uint8_t* data, size_t len)
+bool TWI_readFromSlaveRegister(uint8_t address, uint8_t reg,
+    uint8_t* data, size_t len)
 {
     if(TWI_start())
         return 1;

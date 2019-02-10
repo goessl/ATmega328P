@@ -41,6 +41,7 @@
     #warning "F_CPU not defined! Assuming 16MHz."
 #endif
 
+
 #if F_CPU/2 <= ADC_FREQUENCY_MAX && F_CPU/2 >= ADC_FREQUENCY_MIN
     #define ADC_PRESCALER 2
     #define ADPS0_VALUE 0
@@ -89,11 +90,10 @@ static volatile uint16_t ADC_channels[ADC_N] = {0};
 
 void ADC_init(void)
 {
-    //AVcc with external capacitor at AREF
     ADMUX |= (1 << REFS0);
-    //Enable, start conversion, auto trigger, interrupt, prescaler
     ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE) | (1 << ADIE)
-        | (ADPS2_VALUE << ADPS2) | (ADPS1_VALUE << ADPS1) | (ADPS0_VALUE << ADPS0);
+        | (ADPS2_VALUE << ADPS2) | (ADPS1_VALUE << ADPS1)
+        | (ADPS0_VALUE << ADPS0);
 }
 
 

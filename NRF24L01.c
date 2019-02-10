@@ -16,8 +16,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  * 
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -238,7 +238,8 @@ static uint8_t NRF24L01_readByte(uint8_t address)
     return data;
 }
 
-static uint8_t NRF24L01_writeBits(uint8_t address, uint8_t start, uint8_t len, uint8_t data)
+static uint8_t NRF24L01_writeBits(uint8_t address, uint8_t start, uint8_t len,
+    uint8_t data)
 {
     uint8_t mask = (1 << len) - 1;
     uint8_t temp = NRF24L01_readByte(address);
@@ -311,7 +312,8 @@ static uint8_t NRF24L01_getRXPayloadWidth(void)
     return data;
 }
 
-static void NRF24L01_writeAcknowledgePayload(uint8_t pipe, uint8_t* data, uint8_t len)
+static void NRF24L01_writeAcknowledgePayload(uint8_t pipe,
+    uint8_t* data, uint8_t len)
 {
     NRF24L01_command(NRF24L01_CMD_W_ACK_PAYLOAD(pipe), data, len);
 }
@@ -409,9 +411,11 @@ static bool NRF24L01_getAutoAcknowledgeEnabled(uint8_t pipe)
 static void NRF24L01_setAutoAcknowledgeEnabled(uint8_t pipe, bool enabled)
 {
     if(pipe == NRF24L01_PIPES_N)
-        NRF24L01_writeBits(NRF24L01_RA_EN_AA, NRF24L01_BIT_ENAA_P0, NRF24L01_PIPES_N, (enabled)?0xFF:0x00);
+        NRF24L01_writeBits(NRF24L01_RA_EN_AA, NRF24L01_BIT_ENAA_P0,
+            NRF24L01_PIPES_N, (enabled)?0xFF:0x00);
     else
-        NRF24L01_writeBit(NRF24L01_RA_EN_AA, NRF24L01_BIT_ENAA_P(pipe), enabled);
+        NRF24L01_writeBit(NRF24L01_RA_EN_AA, NRF24L01_BIT_ENAA_P(pipe),
+            enabled);
 }
 
 //Enable RX pipe
@@ -423,15 +427,18 @@ static bool NRF24L01_getPipeEnabled(uint8_t pipe)
 static void NRF24L01_setPipeEnabled(uint8_t pipe, bool enabled)
 {
     if(pipe == NRF24L01_PIPES_N)
-        NRF24L01_writeBits(NRF24L01_RA_EN_RXADDR, NRF24L01_BIT_ERX_P0, NRF24L01_PIPES_N, (enabled)?0xFF:0x00);
+        NRF24L01_writeBits(NRF24L01_RA_EN_RXADDR, NRF24L01_BIT_ERX_P0,
+            NRF24L01_PIPES_N, (enabled)?0xFF:0x00);
     else
-        NRF24L01_writeBit(NRF24L01_RA_EN_RXADDR, NRF24L01_BIT_ERX_P(pipe), enabled);
+        NRF24L01_writeBit(NRF24L01_RA_EN_RXADDR, NRF24L01_BIT_ERX_P(pipe),
+            enabled);
 }
 
 //Address width
 static uint8_t NRF24L01_getAddressWidth(void)
 {
-    uint8_t data = NRF24L01_readBits(NRF24L01_RA_SETUP_AW, NRF24L01_BIT_AW, NRF24L01_LEN_AW);
+    uint8_t data = NRF24L01_readBits(NRF24L01_RA_SETUP_AW, NRF24L01_BIT_AW,
+        NRF24L01_LEN_AW);
     
     if(data == 0x01)
         return 3;
@@ -452,13 +459,15 @@ static void NRF24L01_setAddressWidth(uint8_t width)
     else
         data = 0x03;
     
-    NRF24L01_writeBits(NRF24L01_RA_SETUP_AW, NRF24L01_BIT_AW, NRF24L01_LEN_AW, data);
+    NRF24L01_writeBits(NRF24L01_RA_SETUP_AW, NRF24L01_BIT_AW, NRF24L01_LEN_AW,
+        data);
 }
 
 //Retries
 static uint16_t NRf24L01_getAutoRetransmitDelay(void)
 {
-    uint16_t data = NRF24L01_readBits(NRF24L01_RA_SETUP_RETR, NRF24L01_BIT_ARD, NRF24L01_LEN_ARD);
+    uint16_t data = NRF24L01_readBits(NRF24L01_RA_SETUP_RETR, NRF24L01_BIT_ARD,
+        NRF24L01_LEN_ARD);
     
     return 250 * (data + 1);
 }
@@ -467,28 +476,33 @@ static void NRF24L01_setAutoRetransmitDelay(uint16_t delay)
 {
     uint8_t data = delay / 250 - 1;
     
-    NRF24L01_writeBits(NRF24L01_RA_SETUP_RETR, NRF24L01_BIT_ARD, NRF24L01_LEN_ARD, data);
+    NRF24L01_writeBits(NRF24L01_RA_SETUP_RETR, NRF24L01_BIT_ARD,
+        NRF24L01_LEN_ARD, data);
 }
 
 static uint8_t NRf24L01_getAutoRetransmitCount(void)
 {
-    return NRF24L01_readBits(NRF24L01_RA_SETUP_RETR, NRF24L01_BIT_ARC, NRF24L01_LEN_ARC);
+    return NRF24L01_readBits(NRF24L01_RA_SETUP_RETR, NRF24L01_BIT_ARC,
+        NRF24L01_LEN_ARC);
 }
 
 static void NRF24L01_setAutoRetransmitCount(uint8_t retries)
 {
-    NRF24L01_writeBits(NRF24L01_RA_SETUP_RETR, NRF24L01_BIT_ARC, NRF24L01_LEN_ARC, retries);
+    NRF24L01_writeBits(NRF24L01_RA_SETUP_RETR, NRF24L01_BIT_ARC,
+        NRF24L01_LEN_ARC, retries);
 }
 
 //RF channel
 static uint8_t NRF24L01_getRFChannel(void)
 {
-    return NRF24L01_readBits(NRF24L01_RA_RF_CH, NRF24L01_BIT_RF_CH, NRF24L01_LEN_RF_CH);
+    return NRF24L01_readBits(NRF24L01_RA_RF_CH, NRF24L01_BIT_RF_CH,
+        NRF24L01_LEN_RF_CH);
 }
 
 static void NRF24L01_setRFChannel(uint8_t channel)
 {
-    NRF24L01_writeBits(NRF24L01_RA_RF_CH, NRF24L01_BIT_RF_CH, NRF24L01_LEN_RF_CH, channel);
+    NRF24L01_writeBits(NRF24L01_RA_RF_CH, NRF24L01_BIT_RF_CH,
+        NRF24L01_LEN_RF_CH, channel);
 }
 
 //RF setup
@@ -534,18 +548,22 @@ static void NRF24L01_setHighDataRateEnabled(bool enabled)
 
 static uint8_t NRF24L01_getOutputPower(void)
 {
-    return NRF24L01_readBits(NRF24L01_RA_RF_SETUP, NRF24L01_BIT_RF_PWR, NRF24L01_LEN_RF_PWR);
+    return NRF24L01_readBits(NRF24L01_RA_RF_SETUP, NRF24L01_BIT_RF_PWR,
+        NRF24L01_LEN_RF_PWR);
 }
 
 static void NRF24L01_setOutputPower(uint8_t power)
 {
-    NRF24L01_writeBits(NRF24L01_RA_RF_SETUP, NRF24L01_BIT_RF_PWR, NRF24L01_LEN_RF_PWR, power);
+    NRF24L01_writeBits(NRF24L01_RA_RF_SETUP, NRF24L01_BIT_RF_PWR,
+        NRF24L01_LEN_RF_PWR, power);
 }
 
 //Status
 static uint8_t NRF24L01_getInterrupts(void)
 {
-    return NRF24L01_getStatus() & ((1 << NRF24L01_BIT_RX_DR) | (1 << NRF24L01_BIT_TX_DS) | (1 << NRF24L01_BIT_MAX_RT));
+    return NRF24L01_getStatus()
+        & ((1 << NRF24L01_BIT_RX_DR) | (1 << NRF24L01_BIT_TX_DS)
+            | (1 << NRF24L01_BIT_MAX_RT));
 }
 
 static uint8_t NRF24L01_getClearInterrupts(void)
@@ -574,18 +592,21 @@ static void NRF24L01_clearMAXRTInterrupt(void)
 
 static uint8_t NRF24L01_getRXPipe(void)
 {
-    return NRF24L01_readBits(NRF24L01_RA_STATUS, NRF24L01_BIT_RX_P_NO, NRF24L01_LEN_RX_P_NO);
+    return NRF24L01_readBits(NRF24L01_RA_STATUS, NRF24L01_BIT_RX_P_NO,
+        NRF24L01_LEN_RX_P_NO);
 }
 
 //Observe TX
 static uint8_t NRF24L01_getLostPackets(void)
 {
-    return NRF24L01_readBits(NRF24L01_RA_OBSERVE_TX, NRF24L01_BIT_PLOS_CNT, NRF24L01_LEN_PLOS_CNT);
+    return NRF24L01_readBits(NRF24L01_RA_OBSERVE_TX, NRF24L01_BIT_PLOS_CNT,
+        NRF24L01_LEN_PLOS_CNT);
 }
 
 static uint8_t NRF24L01_getRetransmittedPackets(void)
 {
-    return NRF24L01_readBits(NRF24L01_RA_OBSERVE_TX, NRF24L01_BIT_ARC_CNT, NRF24L01_LEN_ARC_CNT);
+    return NRF24L01_readBits(NRF24L01_RA_OBSERVE_TX, NRF24L01_BIT_ARC_CNT,
+        NRF24L01_LEN_ARC_CNT);
 }
 
 //Received power detector
@@ -597,12 +618,14 @@ static bool NRF24L01_getCarrierDetected(void)
 //RX addresses
 static void NRF24L01_getRXAddress(uint8_t pipe, uint8_t* address)
 {
-    NRF24L01_read(NRF24L01_RA_RX_ADDR_P(pipe), address, NRF24L01_RA_RX_ADDR_P_LEN(pipe));
+    NRF24L01_read(NRF24L01_RA_RX_ADDR_P(pipe), address,
+        NRF24L01_RA_RX_ADDR_P_LEN(pipe));
 }
 
 static void NRF24L01_setRXAddress(uint8_t pipe, uint8_t* address)
 {
-   NRF24L01_write(NRF24L01_RA_RX_ADDR_P(pipe), address, NRF24L01_RA_RX_ADDR_P_LEN(pipe));
+   NRF24L01_write(NRF24L01_RA_RX_ADDR_P(pipe), address,
+    NRF24L01_RA_RX_ADDR_P_LEN(pipe));
 }
 
 //TX address
@@ -619,12 +642,14 @@ static void NRF24L01_setTXAddress(uint8_t* address)
 //RX payload widths
 static uint8_t NRF24L01_getPayloadWidth(uint8_t pipe)
 {
-    return NRF24L01_readBits(NRF24L01_RA_RX_PW_P(pipe), NRF24L01_BIT_RX_PW_P, NRF24L01_LEN_RX_PW_P);
+    return NRF24L01_readBits(NRF24L01_RA_RX_PW_P(pipe), NRF24L01_BIT_RX_PW_P,
+        NRF24L01_LEN_RX_PW_P);
 }
 
 static void NRF24L01_setPayloadWidth(uint8_t pipe, uint8_t width)
 {
-    NRF24L01_writeBits(NRF24L01_RA_RX_PW_P(pipe), NRF24L01_BIT_RX_PW_P, NRF24L01_LEN_RX_PW_P, width);
+    NRF24L01_writeBits(NRF24L01_RA_RX_PW_P(pipe), NRF24L01_BIT_RX_PW_P,
+        NRF24L01_LEN_RX_PW_P, width);
 }
 
 //FIFO status
@@ -662,7 +687,8 @@ static bool NRF24L01_getDynamicPayloadPipeEnabled(uint8_t pipe)
 static void NRF24L01_setDynamicPayloadPipeEnabled(uint8_t pipe, bool enabled)
 {
     if(pipe == NRF24L01_PIPES_N)
-        NRF24L01_writeBits(NRF24L01_RA_DYNPD, NRF24L01_BIT_DPL_P0, NRF24L01_PIPES_N, (enabled)?0xFF:0x00);
+        NRF24L01_writeBits(NRF24L01_RA_DYNPD, NRF24L01_BIT_DPL_P0,
+            NRF24L01_PIPES_N, (enabled)?0xFF:0x00);
     else
         NRF24L01_writeBit(NRF24L01_RA_DYNPD, NRF24L01_BIT_DPL_P(pipe), enabled);
 }
@@ -700,7 +726,8 @@ void NRF24L01_setDynamicAcknowledgeEnabled(bool enabled)
 
 
 
-void NRF24L01_init(uint8_t* csnDDR, uint8_t* csnPORT, uint8_t csnPin, uint8_t* ceDDR, uint8_t* cePORT, uint8_t cePin)
+void NRF24L01_init(uint8_t* csnDDR, uint8_t* csnPORT, uint8_t csnPin,
+    uint8_t* ceDDR, uint8_t* cePORT, uint8_t cePin)
 {
     NRF24L01_csnPORT = csnPORT;
     NRF24L01_csnPin = csnPin;
@@ -781,7 +808,8 @@ bool NRF24L01_sendData(uint8_t* data, uint8_t len)
     {
         interrupts = NRF24L01_getInterrupts();
     }
-    while(!(interrupts & ((1 << NRF24L01_BIT_TX_DS) | (1 << NRF24L01_BIT_MAX_RT))));
+    while(!(interrupts
+        & ((1 << NRF24L01_BIT_TX_DS) | (1 << NRF24L01_BIT_MAX_RT))));
     NRF24L01_clearTXDSInterrupt();
     NRF24L01_clearMAXRTInterrupt();
     

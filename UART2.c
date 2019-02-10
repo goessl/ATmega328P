@@ -72,15 +72,18 @@ FILE UART2_in = FDEV_SETUP_STREAM(NULL, UART2_getc, _FDEV_SETUP_READ);
 
 
 
-static volatile uint8_t UART2_transmitArray[UART2_BUF_LEN], UART2_receiveArray[UART2_BUF_LEN];
+static volatile uint8_t UART2_transmitArray[UART2_BUF_LEN],
+    UART2_receiveArray[UART2_BUF_LEN];
 static volatile RING_t UART2_transmitBuf, UART2_receiveBuf;
 
 
 
 void UART2_init(void)
 {
-    UART2_transmitBuf = RING_init((uint8_t*)UART2_transmitArray, UART2_BUF_LEN);
-    UART2_receiveBuf = RING_init((uint8_t*)UART2_receiveArray, UART2_BUF_LEN);
+    UART2_transmitBuf =
+        RING_init((uint8_t*)UART2_transmitArray, UART2_BUF_LEN);
+    UART2_receiveBuf =
+        RING_init((uint8_t*)UART2_receiveArray, UART2_BUF_LEN);
     
     
     //BAUD rate

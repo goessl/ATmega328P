@@ -35,12 +35,14 @@
 
 
 
-#define SERVO_TIMER 1
-
-
-
 #include <stddef.h>
 #include <stdint.h>
+
+
+
+#ifndef SERVO_TIMER
+    #define SERVO_TIMER 1
+#endif
 
 
 

@@ -50,7 +50,8 @@ static void (*PID_cb)(void);
 
 
 
-void PID_init(uint32_t frequency, PID_t* controllers, size_t n, void (*cb)(void))
+void PID_init(uint32_t frequency, PID_t* controllers, size_t n,
+    void (*cb)(void))
 {
     uint8_t csValue = 0;
     uint16_t prescaler = 0;
@@ -184,7 +185,9 @@ static void PID_iterate(PID_t* controller, double dt)
     
     
     
-    y = controller->kp*e + controller->ki*controller->sum + controller->kd*derivative;
+    y = controller->kp*e
+        + controller->ki*controller->sum
+        + controller->kd*derivative;
     if(y < -controller->outMax)
         y = -controller->outMax;
     else if(y > controller->outMax)
