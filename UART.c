@@ -33,7 +33,6 @@
 #include <avr/io.h>
 #include <stdbool.h>
 #include "UART.h"
-#include <util/setbaud.h>
 
 
 
@@ -41,6 +40,10 @@
     #define F_CPU 16000000UL
     #warning "F_CPU not defined! Assuming 16MHz."
 #endif
+
+
+
+#include <util/setbaud.h>
 
 
 
