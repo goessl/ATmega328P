@@ -43,9 +43,9 @@
 #endif
 
 
-#define SERVO_BASE_US (20 * 1000)
-#define SERVO_MIN_US (1 * 1000)
-#define SERVO_MAX_US (2 * 1000)
+#define SERVO_BASE_US (20 * 1000ULL)
+#define SERVO_MIN_US (1 * 1000ULL)
+#define SERVO_MAX_US (2 * 1000ULL)
 #define SERVO_US_PER_SECOND 1000000
 
 
@@ -243,6 +243,7 @@ void SERVO_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
         TIMSK2 |= (1 << OCIE2A);
     #endif
 }
+
 
 
 void SERVO_setServo(size_t index, double percent)
