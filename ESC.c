@@ -8,43 +8,42 @@
 
 
 #include <util/delay.h>
-#include "PCA9685.h"
+#include "Servo.h"
 #include "ESC.h"
 
 
 
-void ESC_init(size_t* indices, size_t n)
+void ESC_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
 {
-    PCA9685_init();
+    SERVO_init(DDRs, PORTs, masks, n);
     
-    PCA9685_setServo(0, 0);
-    PCA9685_setServo(1, 0);
-    PCA9685_setServo(2, 0);
-    PCA9685_setServo(3, 0);
+    SERVO_setAllServos(0);
     _delay_ms(4000);
 }
 
-void ESC_initThrottle(size_t* indices, size_t n)
+void ESC_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
 {
-    PCA9685_init();
+    SERVO_init(DDRs, PORTs, masks, n);
     
-    ESC_setMotors(indices, n, 1);
+    SERVO_setAllServos(1);
     _delay_ms(4000);
     
-    ESC_setMotors(indices, n, 0);
+    SERVO_setAllServos(0);
     _delay_ms(4000);
 }
 
 
 void ESC_setMotor(size_t index, double percent)
 {
-    PCA9685_setServo(index, percent);
+    SERVO_setServo(index, percent);
 }
 
-void ESC_setMotors(size_t* indices, size_t n, double percent)
+void ESC_setMotors(double* percent)
 {
-    size_t i;
-    
-    for(i=0; i<n; i++)
-        ESC_setMotor(indices[i], percent);
+    SERVO_setServos(percent);
+}
+
+void ESC_setAllMotors(double percent)
+{
+    SERVO_setAllServos(percent);
 }

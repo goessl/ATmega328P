@@ -13,14 +13,16 @@
 
 
 #include <stddef.h>
+#include <stdint.h>
 
 
 
-void ESC_init(size_t* indices, size_t n);
-void ESC_initThrottle(size_t* indices, size_t n);
+void ESC_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n);
+void ESC_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n);
 
 void ESC_setMotor(size_t index, double percent);
-void ESC_setMotors(size_t* indices, size_t n, double percent);
+void ESC_setMotors(double* percent);
+void ESC_setAllMotors(double percent);
 
 
 
