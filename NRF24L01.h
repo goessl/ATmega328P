@@ -43,11 +43,6 @@
 #define NRF24L01_MAX_PAYLOAD 32
 #define NRF24L01_PIPES_N 6
 
-#define NRF24L01_TX_STATUS_BUSY     0
-#define NRF24L01_TX_STATUS_MAX_RT   1
-#define NRF24L01_TX_STATUS_TX_DS    2
-#define NRF24L01_TX_STATUS_TX_AP    3
-
 
 
 //SPI: 10Mhz, Msb first, Mode 0
