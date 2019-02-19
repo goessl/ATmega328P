@@ -33,6 +33,7 @@ void ESC_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
 }
 
 
+
 void ESC_setMotor(size_t index, double percent)
 {
     SERVO_setServo(index, percent);

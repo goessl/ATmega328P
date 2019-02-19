@@ -43,6 +43,7 @@ RING_t RING_init(uint8_t* buf, size_t len)
 }
 
 
+
 int RING_isEmpty(RING_t ring)
 {
     return ring.read == ring.write;

@@ -78,7 +78,7 @@
     #define ADPS1_VALUE 1
     #define ADPS2_VALUE 1
 #else
-    #error "No valid ADC prescaler found!"
+    #error "No valid ADC_PRESCALER found!"
 #endif
 
 
@@ -95,6 +95,7 @@ void ADC_init(void)
         | (ADPS2_VALUE << ADPS2) | (ADPS1_VALUE << ADPS1)
         | (ADPS0_VALUE << ADPS0);
 }
+
 
 
 uint16_t ADC_get(size_t index)
