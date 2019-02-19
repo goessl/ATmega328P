@@ -43,9 +43,6 @@
     #define UART2_BUF_LEN 80
 #endif
 
-#define UART2_OVERWRITE
-#define UART2_STD
-
 
 
 #include <stddef.h>

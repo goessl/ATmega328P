@@ -56,6 +56,7 @@ static int UART2_putc(char c, FILE* stream)
     
     return c;
 }
+
 static int UART2_getc(FILE* stream)
 {
     char c;
@@ -86,22 +87,20 @@ void UART2_init(void)
         RING_init((uint8_t*)UART2_receiveArray, UART2_BUF_LEN);
     
     
-    //BAUD rate
     UBRR0H = UBRRH_VALUE;
     UBRR0L = UBRRL_VALUE;
     #if USE_2X
         UCSR0A |= (1 << U2X0);
     #endif
     
-    //Enable receive interrupt, receiver & transmitter
     UCSR0B |= (1 << RXCIE0) | (1 << RXEN0) | (1 << TXEN0);
     
-    //Redirect standard streams to UART
     #ifdef UART2_STD
         stdout = &UART2_out;
         stdin = &UART2_in;
     #endif
 }
+
 
 
 size_t UART2_transmitAvailable(void)
@@ -163,7 +162,11 @@ int UART2_receiveBurst(uint8_t* data, size_t len)
 
 ISR(USART_UDRE_vect)
 {
-    if(RING_pop((RING_t*)&UART2_transmitBuf, (uint8_t*)&UDR0))
+    uint8_t c;
+    
+    if(!RING_pop((RING_t*)&UART2_transmitBuf, &c))
+        UDR0 = c;
+    else
         UCSR0B &= ~(1 << UDRIE0);
 }
 
