@@ -31,7 +31,6 @@
 
 
 #include <avr/io.h>
-#include <stdbool.h>
 #include "SPI.h"
 
 
@@ -121,17 +120,10 @@ void SPI_init(void)
 
 
 
-static bool SPI_isTransferComplete(void)
-{
-    return SPSR & (1 << SPIF);
-}
-
-
-
 uint8_t SPI_transmit(uint8_t data)
 {
     SPDR = data;
-    while(!SPI_isTransferComplete())
+    while(~SPSR & (1 << SPIF))
         ;
     
     return SPDR;
