@@ -34,12 +34,12 @@ which appears when you click the small downwards facing arrow to the right of th
 
 ## Usage
 
-The function of every module start with the module name in caps, followed by an underline and the the function name in camel case formatting. E.g.
+The functions of every module start with the module name in all capitals, followed by an underline and then the function name in camel case formatting. E.g.
 ```
 UART_transmitBurst()
 ```
 
-Most modules have an init function that needs to be called for every other functions to work properly. E.g.
+Most modules have an init function that needs to be called for every other function to work properly. E.g.
 ```
 UART_init()
 ```
