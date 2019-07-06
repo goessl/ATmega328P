@@ -284,7 +284,7 @@ ISR(SERVO_vect)
     else
     {
         *SERVO_PORTs[SERVO_current] &= ~SERVO_masks[SERVO_current];
-        SERVO_OCRxA = SERVO_BASE_OCRxA/SERVO_n - SERVO_values[SERVO_current];
+        SERVO_OCRxA = SERVO_BASE_OCRxA - SERVO_OCRxA;
         
         if(++SERVO_current >= SERVO_n)
             SERVO_current = 0;

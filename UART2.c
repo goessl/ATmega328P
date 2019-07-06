@@ -95,7 +95,7 @@ void UART2_init(void)
     
     UCSR0B |= (1 << RXCIE0) | (1 << RXEN0) | (1 << TXEN0);
     
-    #ifdef UART2_STD
+    #ifdef UART_STD
         stdout = &UART2_out;
         stdin = &UART2_in;
     #endif
