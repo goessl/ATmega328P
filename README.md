@@ -9,6 +9,7 @@ Driver library for basic functionalities of the ATmega328P (Arduino UNO) microco
  * Servo - Servo driver (interrupt based)
  * ESC - ESC driver (uses Servo.h)
  * PID - PID controller driver (interrupt based)
+ * PID2 - PID controller driver with variable frequency (accessible iterate function) (interrupt based)
  * RING - Ring buffer implementation
  * NRF24L01 - NRF24L01 library (blocking) (uses SPI)
  * NRF24L01_Interrupt - NRF24L01 library (interrupt based) (uses SPI)

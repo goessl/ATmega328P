@@ -41,6 +41,8 @@
     #warning "F_CPU not defined! Assuming 16MHz."
 #endif
 
+#define PID_CLAMP(v, min, max) ((v<min)?min:((v>max)?max:v))
+
 
 
 static volatile double PID_dt;
@@ -149,11 +151,11 @@ void PID_init(uint32_t frequency, PID_t* controllers, size_t n,
     #endif
 }
 
-PID_t PID_initController(double* w, double* r, double* y,
+PID_t PID_initController(double* w, double* y, double* x,
     double kp, double ki, double kd,
     double iMax, double dMax, double outMax)
 {
-    return (PID_t){.w = w, .r = r, .y = y,
+    return (PID_t){.w = w, .y = y, .x = x,
         .kp = kp, .ki = ki, .kd = kd,
         .sum = 0, .last = 0,
         .iMax = iMax, .dMax = dMax, .outMax = outMax};
@@ -161,40 +163,26 @@ PID_t PID_initController(double* w, double* r, double* y,
 
 
 
-static void PID_iterate(PID_t* controller, double dt)
+static void PID_iterate(PID_t* controller)
 {
-    double e = *controller->w - *controller->r;
     double derivative, y;
+    double e = *controller->w - *controller->x;
     
     
     
-    controller->sum += e * dt;
+    controller->sum += e * PID_dt;
+    controller->sum =
+        PID_CLAMP(controller->sum, -controller->iMax, controller->iMax);
     
-    if(controller->sum < -controller->iMax)
-        controller->sum = -controller->iMax;
-    else if(controller->sum > controller->iMax)
-        controller->sum = controller->iMax;
-    
-    
-    derivative = (e - controller->last) / dt;
+    derivative = (e - controller->last) / PID_dt;
+    derivative = PID_CLAMP(derivative, -controller->dMax, controller->dMax);
     controller->last = e;
     
-    if(derivative < -controller->dMax)
-        derivative = -controller->dMax;
-    else if(derivative > controller->dMax)
-        derivative = controller->dMax;
     
-    
-    
-    y = controller->kp*e
-        + controller->ki*controller->sum
-        + controller->kd*derivative;
-    if(y < -controller->outMax)
-        y = -controller->outMax;
-    else if(y > controller->outMax)
-        y = controller->outMax;
-    
-    *controller->y = y;
+    y = controller->kp * e
+        + controller->ki * controller->sum
+        + controller->kd * derivative;
+    *controller->y = PID_CLAMP(y, -controller->outMax, controller->outMax);
 }
 
 
@@ -204,7 +192,7 @@ ISR(PID_vect)
     size_t i;
     
     for(i=0; i<PID_n; i++)
-        PID_iterate((PID_t*)&PID_controllers[i], PID_dt);
+        PID_iterate((PID_t*)&PID_controllers[i]);
     
     if(PID_cb)
         PID_cb();

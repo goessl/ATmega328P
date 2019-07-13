@@ -1,5 +1,5 @@
 ﻿/*
- * PID.h
+ * PID2.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -7,7 +7,7 @@
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2019 Sebastian Gössl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,8 +30,8 @@
 
 
 
-#ifndef PID_H_
-#define PID_H_
+#ifndef PID2_H_
+#define PID2_H_
 
 
 
@@ -40,8 +40,8 @@
 
 
 
-#ifndef PID_TIMER
-    #define PID_TIMER 2
+#ifndef PID2_TIMER
+    #define PID2_TIMER 2
 #endif
 
 
@@ -60,12 +60,13 @@ typedef struct
 
 
 
-void PID_init(uint32_t frequency, PID_t* controllers, size_t n,
-    void (*cb)(void));
+void PID2_init(PID_t* controllers, size_t n);
 
-PID_t PID_initController(double* w, double* y, double* x,
+PID_t PID2_initController(double* w, double* y, double* x,
     double kp, double ki, double kd,
     double iMax, double dMax, double outMax);
+
+uint32_t PID2_iterateAll(void);
 
 
 
