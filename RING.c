@@ -33,13 +33,13 @@
 
 
 
-#define RING_INC_ROLL_OVER(n, s, e) ((n+1 >= e)?s:n+1)
+#define RING_INC_ROLL_OVER(n, s, e) (((n)+1>=(e)) ? (s) : (n)+1)
 
 
 
 RING_t RING_init(uint8_t* buf, size_t len)
 {
-    return (RING_t){.buf = buf, .end = buf + len, .write = buf, .read = buf};
+    return RING_INIT(buf, len);
 }
 
 

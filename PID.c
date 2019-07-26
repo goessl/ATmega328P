@@ -41,7 +41,8 @@
     #warning "F_CPU not defined! Assuming 16MHz."
 #endif
 
-#define PID_CLAMP(v, min, max) ((v<min)?min:((v>max)?max:v))
+#define PID_CLAMP(v, min, max) \
+    (((v)<(min)) ? (min) : (((v)>(max)) ? (max) : (v)))
 
 
 
@@ -155,10 +156,7 @@ PID_t PID_initController(double* w, double* y, double* x,
     double kp, double ki, double kd,
     double iMax, double dMax, double outMax)
 {
-    return (PID_t){.w = w, .y = y, .x = x,
-        .kp = kp, .ki = ki, .kd = kd,
-        .sum = 0, .last = 0,
-        .iMax = iMax, .dMax = dMax, .outMax = outMax};
+    return PID_INIT_CONTROLLER(w, y, x, kp, ki, kd, iMax, dMax, outMax);
 }
 
 

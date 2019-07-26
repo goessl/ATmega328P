@@ -65,8 +65,8 @@
 #define TWBR_VALUE ((F_CPU/TWI_FREQUENCY - 16) / (2 * TWI_PRESCALER))
 
 
-#define TWI_ADDRESS_W(x)    ((x << 1) & ~0x01)
-#define TWI_ADDRESS_R(x)    ((x << 1) | 0x01)
+#define TWI_ADDRESS_W(x)    (((x) << 1) & ~0x01)
+#define TWI_ADDRESS_R(x)    (((x) << 1) | 0x01)
 
 
 

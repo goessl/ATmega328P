@@ -50,6 +50,12 @@ typedef struct
 
 
 
+#define RING_INIT(buf_, len_) \
+    ((RING_t){.buf = (buf_), .end = (buf_)+(len_), \
+        .write = (buf_), .read = (buf_)})
+
+
+
 RING_t RING_init(uint8_t* buf, size_t len);
 
 bool RING_isEmpty(RING_t ring);

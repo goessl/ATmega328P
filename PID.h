@@ -60,6 +60,14 @@ typedef struct
 
 
 
+#define PID_INIT_CONTROLLER(w_, y_, x_, kp_, ki_, kd_, iMax_, dMax_, outMax_) \
+    ((PID_t){.w = (w_), .y = (y_), .x = (x_), \
+        .kp = (kp_), .ki = (ki_), .kd = (kd_), \
+        .sum = 0, .last = 0, \
+        .iMax = (iMax_), .dMax = (dMax_), .outMax = (outMax_)})
+
+
+
 void PID_init(uint32_t frequency, PID_t* controllers, size_t n,
     void (*cb)(void));
 

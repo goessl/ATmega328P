@@ -60,6 +60,14 @@ typedef struct
 
 
 
+#define PID2_INIT_CONTROLLER(w_, y_, x_, kp_, ki_, kd_, iMax_, dMax_, outMax_) \
+    ((PID_t){.w = (w_), .y = (y_), .x = (x_), \
+        .kp = (kp_), .ki = (ki_), .kd = (kd_), \
+        .sum = 0, .last = 0, \
+        .iMax = (iMax_), .dMax = (dMax_), .outMax = (outMax_)})
+
+
+
 void PID2_init(PID_t* controllers, size_t n);
 
 PID_t PID2_initController(double* w, double* y, double* x,
