@@ -32,6 +32,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 #include "ADC.h"
 
 
@@ -100,7 +101,14 @@ void ADC_init(void)
 
 uint16_t ADC_get(size_t index)
 {
-    return ADC_channels[index];
+    uint16_t value;
+    
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        value = ADC_channels[index];
+    }
+    
+    return value;
 }
 
 double ADC_getScaled(size_t index)

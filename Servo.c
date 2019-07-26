@@ -32,6 +32,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 #include <math.h>
 #include "Servo.h"
 
@@ -141,7 +142,7 @@
     
     #if SERVO_US_PER_SECOND / SERVO_BASE_US > F_CPU
         #error "SERVO_BASE_US to small!"
-    #elif F_CPU * SERVO_BASE_US / SERVO_US_PER_SECOND / 1 - 1
+    #elif F_CPU * SERVO_BASE_US / SERVO_US_PER_SECOND / 1 - 1 \
             <= SERVO_TIMER_TOP
         #define SERVO_PRESCALER 1
         #define CS20_VALUE 1
@@ -253,7 +254,10 @@ void SERVO_setServo(size_t index, double percent)
     else if(percent < 0)
         percent = 0;
     
-    SERVO_values[index] = SERVO_PERCENT_TO_OCRxA(percent);
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        SERVO_values[index] = SERVO_PERCENT_TO_OCRxA(percent);
+    }
 }
 
 void SERVO_setServos(double* percent)
@@ -284,7 +288,7 @@ ISR(SERVO_vect)
     else
     {
         *SERVO_PORTs[SERVO_current] &= ~SERVO_masks[SERVO_current];
-        SERVO_OCRxA = SERVO_BASE_OCRxA - SERVO_OCRxA;
+        SERVO_OCRxA = SERVO_BASE_OCRxA/SERVO_n - SERVO_OCRxA;
         
         if(++SERVO_current >= SERVO_n)
             SERVO_current = 0;

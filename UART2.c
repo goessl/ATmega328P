@@ -32,6 +32,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 #include "RING.h"
 #include "UART2.h"
 
@@ -105,18 +106,39 @@ void UART2_init(void)
 
 size_t UART2_transmitAvailable(void)
 {
-    return RING_pushAvailable(UART2_transmitBuf);
+    size_t ret;
+    
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        ret = RING_pushAvailable(UART2_transmitBuf);
+    }
+    
+    return ret;
 }
 
 void UART2_transmitFlush(void)
 {
-    while(!RING_isEmpty(UART2_transmitBuf))
-        ;
+    bool empty;
+    
+    do
+    {
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+        {
+            empty = RING_isEmpty(UART2_transmitBuf);
+        }
+    } while(!empty);
 }
 
 bool UART2_transmit(uint8_t data)
 {
-    if(RING_push((RING_t*)&UART2_transmitBuf, data))
+    bool fail;
+    
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        fail = RING_push((RING_t*)&UART2_transmitBuf, data);
+    }
+    
+    if(fail)
         return 1;
     
     UCSR0B |= (1 << UDRIE0);
@@ -137,17 +159,38 @@ size_t UART2_transmitBurst(uint8_t* data, size_t len)
 
 size_t UART2_receiveAvailable(void)
 {
-    return RING_popAvailable(UART2_receiveBuf);
+    size_t ret;
+    
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        ret = RING_popAvailable(UART2_receiveBuf);
+    }
+    
+    return ret;
 }
 
 bool UART2_receivePeek(uint8_t* data)
 {
-    return RING_peek((RING_t*)&UART2_receiveBuf, data);
+    bool ret;
+    
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        ret = RING_peek((RING_t*)&UART2_receiveBuf, data);
+    }
+    
+    return ret;
 }
 
 bool UART2_receive(uint8_t* data)
 {
-    return RING_pop((RING_t*)&UART2_receiveBuf, data);
+    bool ret;
+    
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        ret = RING_pop((RING_t*)&UART2_receiveBuf, data);
+    }
+    
+    return ret;
 }
 
 size_t UART2_receiveBurst(uint8_t* data, size_t len)

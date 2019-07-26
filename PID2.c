@@ -32,6 +32,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 #include "PID2.h"
 
 
@@ -127,9 +128,10 @@ uint32_t PID2_iterateAll(void)
     
     
     
-    cli();
-    ticks = (uint32_t)PID2_TIMER_TOP * PID2_overflows + PID2_TIMER_TCNT;
-    sei();
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        ticks = (uint32_t)PID2_TIMER_TOP * PID2_overflows + PID2_TIMER_TCNT;
+    }
     PID2_TIMER_TCNT = 0;
     PID2_overflows = 0;
     
