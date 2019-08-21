@@ -4,6 +4,7 @@ Driver library for basic functionalities of the ATmega328P (Arduino UNO) microco
  * UART - UART (blocking)
  * UART2 - UART (interrupt based) (uses RING.h)
  * SPI - SPI Master
+ * SPI2 - SPI Master (interrupt based)
  * TWI - I2C Master
  * ADC - Analog to digital converter (interrupt based)
  * Servo - Servo driver (interrupt based)
