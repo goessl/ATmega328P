@@ -75,7 +75,7 @@ void TWI_init(void)
     TWBR = TWBR_VALUE;
     TWSR = (TWPS1_VALUE << TWPS1) | (TWPS0_VALUE << TWPS0);
     
-    TWCR |= (1 << TWEN);
+    TWCR = (1 << TWEN);
 }
 
 

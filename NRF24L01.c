@@ -285,7 +285,11 @@ static void NRF24L01_readRXPayload(uint8_t* data, uint8_t len)
 
 static void NRF24L01_writeTXPayload(uint8_t* data, uint8_t len)
 {
-    NRF24L01_command(NRF24L01_CMD_W_TX_PAYLOAD, data, len);
+    uint8_t temp[NRF24L01_MAX_PAYLOAD];
+    
+    memcpy(temp, data, len);
+    
+    NRF24L01_command(NRF24L01_CMD_W_TX_PAYLOAD, temp, len);
 }
 
 static void NRF24L01_flushTX(void)
