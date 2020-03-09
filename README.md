@@ -1,8 +1,9 @@
 # ATmega328P
 
-Driver library for basic functionalities of the ATmega328P (Arduino UNO) microcontroller.
+Driver library for basic functionalities of the ATmega328P (Arduino UNO)
+microcontroller.
  * UART - UART (blocking)
- * UART2 - UART (interrupt based) (uses RING.h)
+ * UART2 - UART (interrupt based) (uses RING)
  * SPI - SPI Master
  * SPI2 - SPI Master (interrupt based)
  * TWI - I2C Master
@@ -11,7 +12,8 @@ Driver library for basic functionalities of the ATmega328P (Arduino UNO) microco
  * Servo - Servo driver (interrupt based)
  * ESC - ESC driver (uses Servo.h)
  * PID - PID controller driver (interrupt based)
- * PID2 - PID controller driver with variable frequency (accessible iterate function) (interrupt based)
+ * PID2 - PID controller driver with variable frequency (accessible iterate
+ function) (interrupt based)
  * RING - Ring buffer implementation
  * NRF24L01 - NRF24L01 library (blocking) (uses SPI)
  * NRF24L01_Interrupt - NRF24L01 library (interrupt based) (uses SPI)
@@ -20,34 +22,72 @@ Driver library for basic functionalities of the ATmega328P (Arduino UNO) microco
 
 ### Prerequisites
 
-This project is written in C and nothing except the standard libraries (avr-libc) are needed.
+This project is written in C and nothing except the standard libraries
+(avr-libc) are needed.
 
 ### Installation
 
 Download this repository and save it somewhere where you can find it later.
-Add the repository folder to your include paths and the source files (.c) to your project when compiling.
+Add the repository folder to your include paths and the source files (.c) to
+your project when compiling.
 
 #### Atmel Studio 7.0
 
-When you created a new project right-click on the project (in the solution explorer) and go to Properties->Toolchain->[Your Compiler]->Directories and add a new directory.
-Select this repository in the file chooser and click ok. This lets the compiler find the header files when you include them in your sources.
-You also have to add the needed source files to your project (if you use UART.h then you also need to add UART.c). You can add them by right-clicking on the project, go to "Add" and then press "Existing item...".
-Now select the source files (.c) and press "Add". (You can also add them as link so it doesn't always copies the whole file to your project directory by pressing "Add as link"
-which appears when you click the small downwards facing arrow to the right of the "Add" button in the file chooser)
+When you created a new project right-click on the project (in the solution
+explorer) and go to Properties->Toolchain->[Your Compiler]->Directories and add
+a new directory.
+Select this repository in the file chooser and click ok. This lets the compiler
+find the header files when you include them in your sources.
+You also have to add the needed source files to your project (if you use UART.h
+then you also need to add UART.c). You can add them by right-clicking on the
+project, go to "Add" and then press "Existing item...".
+Now select the source files (.c) and press "Add". (You can also add them as
+link so it doesn't always copies the whole file to your project directory by
+pressing "Add as link"
+which appears when you click the small downwards facing arrow to the right of
+the "Add" button in the file chooser)
 
 ## Usage
 
-The functions of every module start with the module name in all capitals, followed by an underline and then the function name in camel case formatting. E.g.
+The functions of every module start with the module name in all capitals,
+followed by an underline and then the function name in camel case formatting.
+E.g.
 ```
 UART_transmitBurst()
 ```
 
-Most modules have an init function that needs to be called for every other function to work properly. E.g.
+Most modules have an init function that needs to be called for every other
+function to work properly. E.g.
 ```
 UART_init()
 ```
+The functions should all be self explanatory.
+Also make sure to enable interrupts before calling any function of modules that
+use interrupts.
 
-Also make sure to enable interrupts before calling any function of modules that use interrupts!
+## Building
+
+In the [test folder](./test/) are very simple examples. They can be built with
+the [makefile](./test/makefile) that is also located there. Use `make` or
+`make all` builds all examples, or e.g. `make ADC_main.hex` to build the ADC
+example. The hex files can be uploaded to an Arduino UNO with e.g.
+`make upload_ADC` to flash the ADC example onto the Arduino.
+
+## TODO
+
+ - [ ] Add tests for all modules
+ - [ ] Improve makefile
+ - [ ] Remove useless modules
+ - [ ] Add useful documentation
+ - [ ] Better design pattern: lower case module names, no camel case function
+ names
+ - [ ] Change UART_STD to NO_UART_STD to supress redirection
+ - [ ] NRF24L01_Interrupt: Use SPI2
+ - [ ] Split NRF24L01 to own repo
+ - [ ] Only include what's needed
+ - [ ] Timer macros
+ - [x] Organize directories
+ - [x] Add makefile
 
 ## License (MIT)
 

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * UART.h
  * 
  * Author:      Sebastian Gössl
