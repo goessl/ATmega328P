@@ -6,8 +6,10 @@ PORT=/dev/ttyACM0
 
 #Compiler & hex extractor
 CC=avr-gcc
-SYMBOLS=-D F_CPU=16000000UL -D UART_STD
-CFLAGS=-O1 -mmcu=$(MCU) -I$(INC) $(SYMBOLS) -Wall -Wextra -Wundef -pedantic -funsigned-char -funsigned-bitfields -ffunction-sections -fdata-sections -fpack-struct -fshort-enums
+SYMBOLS=-D F_CPU=16000000UL
+CFLAGS=-O1 -mmcu=$(MCU) -I$(INC) $(SYMBOLS) -Wall -Wextra -Wundef -pedantic \
+	-funsigned-char -funsigned-bitfields -ffunction-sections -fdata-sections \
+	-fpack-struct -fshort-enums
 LFLAGS=-mmcu=$(MCU)
 
 HC=avr-objcopy
@@ -42,7 +44,8 @@ NRF24L01.o: $(SRC)/NRF24L01.c $(INC)/NRF24L01.h $(INC)/SPI.h
 	$(CC) $(CFLAGS) -c -o NRF24L01.o $(SRC)/NRF24L01.c
 
 #NRF24L01_Interrupt
-NRF24L01_Interrupt.o: $(SRC)/NRF24L01_Interrupt.c $(INC)/NRF24L01_Interrupt.h $(INC)/SPI.h
+NRF24L01_Interrupt.o: $(SRC)/NRF24L01_Interrupt.c $(INC)/NRF24L01_Interrupt.h \
+	$(INC)/SPI.h
 	$(CC) $(CFLAGS) -c -o NRF24L01_Interrupt.o $(SRC)/NRF24L01_Interrupt.c
 
 #PID2

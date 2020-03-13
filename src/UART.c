@@ -76,7 +76,7 @@ void UART_init(void)
     
     UCSR0B |= (1 << RXEN0) | (1 << TXEN0);
     
-    #ifdef UART_STD
+    #ifndef NO_UART_STD
         stdout = &UART_out;
         stdin = &UART_in;
     #endif

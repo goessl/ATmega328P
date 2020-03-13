@@ -80,11 +80,11 @@ example. The hex files can be uploaded to an Arduino UNO with e.g.
  - [ ] Add useful documentation
  - [ ] Better design pattern: lower case module names, no camel case function
  names
- - [ ] Change UART_STD to NO_UART_STD to supress redirection
  - [ ] NRF24L01_Interrupt: Use SPI2
  - [ ] Split NRF24L01 to own repo
  - [ ] Only include what's needed
  - [ ] Timer macros
+ - [x] UART redirect standard streams on default
  - [x] Organize directories
  - [x] Add makefile
 
