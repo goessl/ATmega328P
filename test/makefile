@@ -45,10 +45,6 @@ NRF24L01.o: $(SRC)/NRF24L01.c $(INC)/NRF24L01.h $(INC)/SPI.h
 NRF24L01_Interrupt.o: $(SRC)/NRF24L01_Interrupt.c $(INC)/NRF24L01_Interrupt.h $(INC)/SPI.h
 	$(CC) $(CFLAGS) -c -o NRF24L01_Interrupt.o $(SRC)/NRF24L01_Interrupt.c
 
-#PID
-PID.o: $(SRC)/PID.c $(INC)/PID.h
-	$(CC) $(CFLAGS) -c -o PID.o $(SRC)/PID.c
-
 #PID2
 PID2.o: $(SRC)/PID2.c $(INC)/PID2.h
 	$(CC) $(CFLAGS) -c -o PID2.o $(SRC)/PID2.c

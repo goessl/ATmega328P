@@ -11,7 +11,6 @@ microcontroller.
  * ADC - Analog to digital converter (interrupt based)
  * Servo - Servo driver (interrupt based)
  * ESC - ESC driver (uses Servo.h)
- * PID - PID controller driver (interrupt based)
  * PID2 - PID controller driver with variable frequency (accessible iterate
  function) (interrupt based)
  * RING - Ring buffer implementation
