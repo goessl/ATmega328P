@@ -154,12 +154,14 @@ void SPI2_transmitBurst(uint8_t* out, uint8_t* in, size_t len,
     SPI2_pin = pin;
     
     
-    *SPI2_port &= ~(1 << SPI2_pin);
+    if(SPI_port)
+        *SPI2_port &= ~(1 << SPI2_pin);
     
     if(SPI2_len)
         SPDR = *SPI2_out++;
     else
-        *SPI2_port |= (1 << SPI2_pin);
+        if(SPI_port)
+            *SPI2_port |= (1 << SPI2_pin);
 }
 
 
@@ -171,5 +173,6 @@ ISR(SPI_STC_vect)
     if(--SPI2_len)
         SPDR = *SPI2_out++;
     else
-        *SPI2_port |= (1 << SPI2_pin);
+        if(SPI_port)
+            *SPI2_port |= (1 << SPI2_pin);
 }
