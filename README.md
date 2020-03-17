@@ -75,7 +75,6 @@ example. The hex files can be uploaded to an Arduino UNO with e.g.
 ## TODO
 
  - [ ] Add tests for all modules
- - [ ] Improve makefile
  - [ ] Remove useless modules
  - [ ] Add useful documentation
  - [ ] Better design pattern: lower case module names, no camel case function
@@ -84,6 +83,7 @@ example. The hex files can be uploaded to an Arduino UNO with e.g.
  - [ ] Split NRF24L01 to own repo
  - [ ] Only include what's needed
  - [ ] Timer macros
+ - [x] Improve makefile
  - [x] UART redirect standard streams on default
  - [x] Organize directories
  - [x] Add makefile
