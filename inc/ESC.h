@@ -43,9 +43,12 @@
 void ESC_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n);
 void ESC_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n);
 
-void ESC_setMotor(size_t index, double percent);
-void ESC_setMotors(double* percent);
-void ESC_setAllMotors(double percent);
+void ESC_setMotor(size_t index, uint8_t value);
+void ESC_setMotorScaled(size_t index, double percent);
+void ESC_setMotors(uint8_t* values);
+void ESC_setMotorsScaled(double* percents);
+void ESC_setAllMotors(uint8_t value);
+void ESC_setAllMotorsScaled(double percent);
 
 
 

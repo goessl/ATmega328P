@@ -44,10 +44,11 @@
 #endif
 
 
-#define SERVO_BASE_US (20 * 1000)
-#define SERVO_MIN_US (1 * 1000)
-#define SERVO_MAX_US (2 * 1000)
+#define SERVO_BASE_US       (20 * 1000)
+#define SERVO_MIN_US        (1 * 1000)
+#define SERVO_MAX_US        (2 * 1000)
 #define SERVO_US_PER_SECOND 1000000
+#define SERVO_MAX_N         (SERVO_BASE_US / SERVO_MAX_US)
 
 
 #if SERVO_TIMER == 0
@@ -194,14 +195,20 @@
 
 
 #define SERVO_US_TO_OCRxA(us) \
-    ((unsigned long long)us * (F_CPU / SERVO_PRESCALER) / SERVO_US_PER_SECOND - 1)
+    ((unsigned long long)(us) * (F_CPU / SERVO_PRESCALER) \
+    / SERVO_US_PER_SECOND - 1)
 
 #define SERVO_BASE_OCRxA SERVO_US_TO_OCRxA(SERVO_BASE_US)
 #define SERVO_MIN_OCRxA SERVO_US_TO_OCRxA(SERVO_MIN_US)
 #define SERVO_MAX_OCRxA SERVO_US_TO_OCRxA(SERVO_MAX_US)
 
 #define SERVO_PERCENT_TO_OCRxA(percent) \
-    ((SERVO_MAX_OCRxA - SERVO_MIN_OCRxA) * percent + SERVO_MIN_OCRxA)
+    ((SERVO_OCRxA_TYPE) \
+    ((percent) * (SERVO_MAX_OCRxA - SERVO_MIN_OCRxA) + SERVO_MIN_OCRxA))
+#define SERVO_UINT8T_TO_OCRxA(value) \
+    ((SERVO_OCRxA_TYPE) \
+    ((long)(value) * (SERVO_MAX_OCRxA - SERVO_MIN_OCRxA) / 0xFF \
+    + SERVO_MIN_OCRxA))
 
 
 
@@ -209,7 +216,7 @@ static volatile uint8_t** SERVO_PORTs;
 static volatile uint8_t* SERVO_masks;
 static volatile size_t SERVO_n;
 static volatile size_t SERVO_current = 0;
-static volatile SERVO_OCRxA_TYPE SERVO_values[SERVO_BASE_US / SERVO_MAX_US];
+static volatile SERVO_OCRxA_TYPE SERVO_values[SERVO_MAX_N];
 
 
 
@@ -247,33 +254,63 @@ void SERVO_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
 
 
 
-void SERVO_setServo(size_t index, double percent)
+void SERVO_setServo(size_t index, uint8_t value)
 {
+    SERVO_OCRxA_TYPE ocrxa = SERVO_UINT8T_TO_OCRxA(value);
+    
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        SERVO_values[index] = ocrxa;
+    }
+}
+
+void SERVO_setServoScaled(size_t index, double percent)
+{
+    SERVO_OCRxA_TYPE ocrxa;
+    
     if(percent > 1)
         percent = 1;
     else if(percent < 0)
         percent = 0;
     
+    ocrxa = SERVO_PERCENT_TO_OCRxA(percent);
+    
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        SERVO_values[index] = SERVO_PERCENT_TO_OCRxA(percent);
+        SERVO_values[index] = ocrxa;
     }
 }
 
-void SERVO_setServos(double* percent)
+void SERVO_setServos(uint8_t* values)
 {
     size_t i;
     
     for(i=0; i<SERVO_n; i++)
-        SERVO_setServo(i, percent[i]);
+        SERVO_setServo(i, values[i]);
 }
 
-void SERVO_setAllServos(double percent)
+void SERVO_setServosScaled(double* percents)
 {
     size_t i;
     
     for(i=0; i<SERVO_n; i++)
-        SERVO_setServo(i, percent);
+        SERVO_setServoScaled(i, percents[i]);
+}
+
+void SERVO_setAllServos(uint8_t value)
+{
+    size_t i;
+    
+    for(i=0; i<SERVO_n; i++)
+        SERVO_setServo(i, value);
+}
+
+void SERVO_setAllServosScaled(double percent)
+{
+    size_t i;
+    
+    for(i=0; i<SERVO_n; i++)
+        SERVO_setServoScaled(i, percent);
 }
 
 

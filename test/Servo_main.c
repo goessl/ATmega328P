@@ -43,17 +43,17 @@ void init(void);
 
 #define SERVO_N 4
 
-uint8_t* DDRs[] = {
+uint8_t* DDRs[SERVO_N] = {
     (uint8_t*)&DDRB,
     (uint8_t*)&DDRB,
     (uint8_t*)&DDRB,
     (uint8_t*)&DDRB};
-uint8_t* PORTS[] = {
+uint8_t* PORTS[SERVO_N] = {
     (uint8_t*)&PORTB,
     (uint8_t*)&PORTB,
     (uint8_t*)&PORTB,
     (uint8_t*)&PORTB};
-uint8_t masks[] = {
+uint8_t masks[SERVO_N] = {
     (uint8_t)(1 << PORTB5),
     (uint8_t)(1 << PORTB4),
     (uint8_t)(1 << PORTB3),
@@ -63,24 +63,22 @@ uint8_t masks[] = {
 
 int main(void)
 {
-    double i;
+    size_t i;
+    uint8_t servos[SERVO_N] = {0x00, 0xFF/4, 0xFF/2, 0xFF/4*3};
     
     
     
     init();
     
-    while (1)
+    while(1)
     {
-        for(i=0; i<=1; i+=0.1)
+        SERVO_setServos(servos);
+        for(i=0; i<SERVO_N; i++)
         {
-            SERVO_setAllServos(i);
-            _delay_ms(200);
+            servos[i]++;
         }
-        for(i=1; i>=0; i-=0.1)
-        {
-            SERVO_setAllServos(i);
-            _delay_ms(200);
-        }
+        
+        _delay_ms(50);
     }
 }
 

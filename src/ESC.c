@@ -40,7 +40,7 @@ void ESC_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
 {
     SERVO_init(DDRs, PORTs, masks, n);
     
-    SERVO_setAllServos(0);
+    SERVO_setAllServos(0x00);
     _delay_ms(4000);
 }
 
@@ -48,26 +48,41 @@ void ESC_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
 {
     SERVO_init(DDRs, PORTs, masks, n);
     
-    SERVO_setAllServos(1);
+    SERVO_setAllServos(0xFF);
     _delay_ms(4000);
     
-    SERVO_setAllServos(0);
+    SERVO_setAllServos(0x00);
     _delay_ms(4000);
 }
 
 
 
-void ESC_setMotor(size_t index, double percent)
+void ESC_setMotor(size_t index, uint8_t value)
 {
-    SERVO_setServo(index, percent);
+    SERVO_setServo(index, value);
 }
 
-void ESC_setMotors(double* percent)
+void ESC_setMotorScaled(size_t index, double percent)
 {
-    SERVO_setServos(percent);
+    SERVO_setServoScaled(index, percent);
 }
 
-void ESC_setAllMotors(double percent)
+void ESC_setMotors(uint8_t* values)
 {
-    SERVO_setAllServos(percent);
+    SERVO_setServos(values);
+}
+
+void ESC_setMotorsScaled(double* percents)
+{
+    SERVO_setServosScaled(percents);
+}
+
+void ESC_setAllMotors(uint8_t value)
+{
+    SERVO_setAllServos(value);
+}
+
+void ESC_setAllMotorsScaled(double percent)
+{
+    SERVO_setAllServosScaled(percent);
 }
