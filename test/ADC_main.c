@@ -42,14 +42,22 @@ void init(void);
 
 int main(void)
 {
+    size_t i;
+    uint16_t channels[ADC_N];
+    
+    
+    
     init();
     
     while(1)
     {
-        printf("%4d, %4d, %4d, %4d, %4d, %4d\n",
-            ADC_get(0), ADC_get(1), ADC_get(2),
-            ADC_get(3), ADC_get(4), ADC_get(5));
-        _delay_ms(500);
+        ADC_getAll(channels);
+        for(i=0; i<ADC_N-1; i++)
+        {
+            printf("%4d, ", channels[i]);
+        }
+        printf("%4d\n", channels[ADC_N-1]);
+        _delay_ms(250);
     }
 }
 

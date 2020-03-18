@@ -116,6 +116,27 @@ double ADC_getScaled(size_t index)
     return (double)ADC_get(index) / ADC_TOP;
 }
 
+void ADC_getAll(uint16_t* channel)
+{
+    
+    size_t i;
+    
+    for(i=0; i<ADC_N; i++)
+    {
+        *channel++ = ADC_get(i);
+    }
+}
+
+void ADC_getAllScaled(double* channel)
+{
+    size_t i;
+    
+    for(i=0; i<ADC_N; i++)
+    {
+        *channel++ = ADC_getScaled(i);
+    }
+}
+
 
 
 ISR(ADC_vect)

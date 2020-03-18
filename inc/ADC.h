@@ -51,6 +51,8 @@ void ADC_init(void);
 
 uint16_t ADC_get(size_t index);
 double ADC_getScaled(size_t index);
+void ADC_getAll(uint16_t* channel);
+void ADC_getAllScaled(double* channel);
 
 
 
