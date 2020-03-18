@@ -133,6 +133,11 @@ bool UART2_transmit(uint8_t data)
 {
     bool fail;
     
+    
+    while(UART2_transmitAvailable() < 1)
+        ;
+    
+    
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
         fail = RING_push((RING_t*)&UART2_transmitBuf, data);
