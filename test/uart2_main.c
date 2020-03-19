@@ -54,9 +54,7 @@ int main(void)
     while(1)
     {
         if(fqgets(s, MAX_LEN, &uart2_in))
-        {
             fputs(s, &uart2_out);
-        }
     }
 }
 

@@ -118,13 +118,10 @@ double adc_getScaled(size_t index)
 
 void adc_getAll(uint16_t* channel)
 {
-    
     size_t i;
     
     for(i=0; i<ADC_N; i++)
-    {
         *channel++ = adc_get(i);
-    }
 }
 
 void adc_getAllScaled(double* channel)
@@ -132,9 +129,7 @@ void adc_getAllScaled(double* channel)
     size_t i;
     
     for(i=0; i<ADC_N; i++)
-    {
         *channel++ = adc_getScaled(i);
-    }
 }
 
 

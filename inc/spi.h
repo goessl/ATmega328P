@@ -56,8 +56,10 @@
 
 void spi_init(void);
 
-uint8_t spi_transmit(uint8_t data);
-void spi_transmitBurst(uint8_t* out, uint8_t* in, size_t len);
+uint8_t spi_writeRead(uint8_t data);
+void spi_writeBurst(uint8_t* out, size_t len);
+void spi_readBurst(uint8_t* in, size_t len);
+void spi_writeReadBurst(uint8_t* out, uint8_t* in, size_t len);
 
 
 

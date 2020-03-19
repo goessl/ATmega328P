@@ -74,9 +74,7 @@ int main(void)
     {
         servo_setServos(servos);
         for(i=0; i<SERVO_N; i++)
-        {
             servos[i]++;
-        }
         
         _delay_ms(50);
     }

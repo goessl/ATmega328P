@@ -52,9 +52,7 @@ int main(void)
     {
         twi_start();
         if(!twi_addressWrite(address))
-        {
             printf("0x%02X\n", address);
-        }
         twi_stop();
     }
     printf("Done!\n");

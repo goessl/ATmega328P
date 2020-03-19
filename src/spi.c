@@ -120,7 +120,7 @@ void spi_init(void)
 
 
 
-uint8_t spi_transmit(uint8_t data)
+uint8_t spi_writeRead(uint8_t data)
 {
     SPDR = data;
     while(~SPSR & (1 << SPIF))
@@ -129,8 +129,20 @@ uint8_t spi_transmit(uint8_t data)
     return SPDR;
 }
 
-void spi_transmitBurst(uint8_t* out, uint8_t* in, size_t len)
+void spi_writeBurst(uint8_t* out, size_t len)
 {
     while(len--)
-        *in++ = spi_transmit(*out++);
+        spi_writeRead(*out++);
+}
+
+void spi_readBurst(uint8_t* in, size_t len)
+{
+    while(len--)
+        *in++ = spi_writeRead(0x00);
+}
+
+void spi_writeReadBurst(uint8_t* out, uint8_t* in, size_t len)
+{
+    while(len--)
+        *in++ = spi_writeRead(*out++);
 }

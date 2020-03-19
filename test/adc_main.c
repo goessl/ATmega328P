@@ -53,9 +53,7 @@ int main(void)
     {
         adc_getAll(channels);
         for(i=0; i<ADC_N-1; i++)
-        {
             printf("%4d, ", channels[i]);
-        }
         printf("%4d\n", channels[ADC_N-1]);
         _delay_ms(250);
     }

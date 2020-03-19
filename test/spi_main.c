@@ -48,13 +48,10 @@ int main(void)
     
     printf("Sent : Received\n");
     for(byte=0x00; byte<=0xFF; byte++)
-    {
-        printf("0x%02X : 0x%02X\n", (uint8_t)byte, spi_transmit(byte));
-    }
+        printf("0x%02X : 0x%02X\n", (uint8_t)byte, spi_writeRead(byte));
     
     while(1)
-    {
-    }
+        ;
 }
 
 void init(void)
