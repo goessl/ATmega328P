@@ -1,5 +1,5 @@
 /*
- * UART2_main.c
+ * uart2_main.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -32,7 +32,7 @@
 
 #include <avr/interrupt.h>
 #include <stdio.h>
-#include "UART2.h"
+#include "uart2.h"
 
 
 
@@ -53,16 +53,16 @@ int main(void)
     
     while(1)
     {
-        if(fqgets(s, MAX_LEN, &UART2_in))
+        if(fqgets(s, MAX_LEN, &uart2_in))
         {
-            fputs(s, &UART2_out);
+            fputs(s, &uart2_out);
         }
     }
 }
 
 void init(void)
 {
-    UART2_init();
+    uart2_init();
     sei();
 }
 

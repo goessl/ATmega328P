@@ -1,4 +1,4 @@
-﻿/*
+/*
  * ADC.c
  * 
  * Author:      Sebastian Gössl
@@ -33,7 +33,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
-#include "ADC.h"
+#include "adc.h"
 
 
 
@@ -84,12 +84,12 @@
 
 
 
-static volatile size_t ADC_current = 0, ADC_next = 0;
-static volatile uint16_t ADC_channels[ADC_N] = {0};
+static volatile size_t adc_current = 0, adc_next = 0;
+static volatile uint16_t adc_channels[ADC_N] = {0};
 
 
 
-void ADC_init(void)
+void adc_init(void)
 {
     ADMUX |= (1 << REFS0);
     ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE) | (1 << ADIE)
@@ -99,41 +99,41 @@ void ADC_init(void)
 
 
 
-uint16_t ADC_get(size_t index)
+uint16_t adc_get(size_t index)
 {
     uint16_t value;
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        value = ADC_channels[index];
+        value = adc_channels[index];
     }
     
     return value;
 }
 
-double ADC_getScaled(size_t index)
+double adc_getScaled(size_t index)
 {
-    return (double)ADC_get(index) / ADC_TOP;
+    return (double)adc_get(index) / ADC_TOP;
 }
 
-void ADC_getAll(uint16_t* channel)
+void adc_getAll(uint16_t* channel)
 {
     
     size_t i;
     
     for(i=0; i<ADC_N; i++)
     {
-        *channel++ = ADC_get(i);
+        *channel++ = adc_get(i);
     }
 }
 
-void ADC_getAllScaled(double* channel)
+void adc_getAllScaled(double* channel)
 {
     size_t i;
     
     for(i=0; i<ADC_N; i++)
     {
-        *channel++ = ADC_getScaled(i);
+        *channel++ = adc_getScaled(i);
     }
 }
 
@@ -141,13 +141,13 @@ void ADC_getAllScaled(double* channel)
 
 ISR(ADC_vect)
 {
-    ADC_channels[ADC_current] = ADC;
+    adc_channels[adc_current] = ADC;
     
-    ADC_current = ADC_next;
-    if(++ADC_next >= ADC_N)
-        ADC_next = 0;
-    //ADC_next = (ADC_next + 1) % ADC_N;
+    adc_current = adc_next;
+    if(++adc_next >= ADC_N)
+        adc_next = 0;
+    //adc_next = (adc_next + 1) % ADC_N;
     
     ADMUX = (ADMUX & ((1 << REFS0) | (1 << REFS0) | (1 << ADLAR))) |
-        (ADC_next & ((1 << MUX3) | (1 << MUX2) | (1 << MUX1) | (1 << MUX0)));
+        (adc_next & ((1 << MUX3) | (1 << MUX2) | (1 << MUX1) | (1 << MUX0)));
 }

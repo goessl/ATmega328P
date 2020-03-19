@@ -1,5 +1,5 @@
-﻿/*
- * ESC.h
+/*
+ * SPI_main.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,26 +30,35 @@
 
 
 
-#ifndef ESC_H_
-#define ESC_H_
+#include <stdio.h>
+#include "spi.h"
+#include "uart.h"
 
 
 
-#include <stddef.h>
-#include <stdint.h>
+void init(void);
 
+int main(void)
+{
+    uint16_t byte;
+    
+    
+    
+    init();
+    
+    printf("Sent : Received\n");
+    for(byte=0x00; byte<=0xFF; byte++)
+    {
+        printf("0x%02X : 0x%02X\n", (uint8_t)byte, spi_transmit(byte));
+    }
+    
+    while(1)
+    {
+    }
+}
 
-
-void ESC_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n);
-void ESC_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n);
-
-void ESC_setMotor(size_t index, uint8_t value);
-void ESC_setMotorScaled(size_t index, double percent);
-void ESC_setMotors(uint8_t* values);
-void ESC_setMotorsScaled(double* percents);
-void ESC_setAllMotors(uint8_t value);
-void ESC_setAllMotorsScaled(double percent);
-
-
-
-#endif /* ESC_H_ */
+void init(void)
+{
+    uart_init();
+    spi_init();
+}

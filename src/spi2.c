@@ -1,5 +1,5 @@
 /*
- * SPI2.c
+ * spi2.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -32,7 +32,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "SPI2.h"
+#include "spi2.h"
 
 
 
@@ -107,15 +107,15 @@
 
 
 
-static volatile uint8_t* SPI2_out;
-static volatile uint8_t* SPI2_in;
-static volatile size_t SPI2_len;
-static volatile uint8_t* SPI2_port;
-static volatile uint8_t SPI2_pin;
+static volatile uint8_t* spi2_out;
+static volatile uint8_t* spi2_in;
+static volatile size_t spi2_len;
+static volatile uint8_t* spi2_port;
+static volatile uint8_t spi2_pin;
 
 
 
-void SPI2_init(void)
+void spi2_init(void)
 {
     DDRB |= (1 << DDB2) | (1 << DDB3) | (1 << DDB5);
     //DDRB &= ~(1 << DDB4);
@@ -129,50 +129,50 @@ void SPI2_init(void)
 
 
 
-bool SPI2_isBusy(void)
+bool spi2_isBusy(void)
 {
-    return SPI2_len;
+    return spi2_len;
 }
 
-void SPI2_flush(void)
+void spi2_flush(void)
 {
-    while(SPI2_len)
+    while(spi2_len)
         ;
 }
 
 
 
-void SPI2_transmitBurst(uint8_t* out, uint8_t* in, size_t len,
+void spi2_transmitBurst(uint8_t* out, uint8_t* in, size_t len,
     uint8_t* port, uint8_t pin)
 {
-    SPI2_flush();
+    spi2_flush();
     
-    SPI2_out = out;
-    SPI2_in = in;
-    SPI2_len = len;
-    SPI2_port = port;
-    SPI2_pin = pin;
+    spi2_out = out;
+    spi2_in = in;
+    spi2_len = len;
+    spi2_port = port;
+    spi2_pin = pin;
     
     
-    if(SPI_port)
-        *SPI2_port &= ~(1 << SPI2_pin);
+    if(spi2_port)
+        *spi2_port &= ~(1 << spi2_pin);
     
-    if(SPI2_len)
-        SPDR = *SPI2_out++;
+    if(spi2_len)
+        SPDR = *spi2_out++;
     else
-        if(SPI_port)
-            *SPI2_port |= (1 << SPI2_pin);
+        if(spi2_port)
+            *spi2_port |= (1 << spi2_pin);
 }
 
 
 
 ISR(SPI_STC_vect)
 {
-    *SPI2_in++ = SPDR;
+    *spi2_in++ = SPDR;
     
-    if(--SPI2_len)
-        SPDR = *SPI2_out++;
+    if(--spi2_len)
+        SPDR = *spi2_out++;
     else
-        if(SPI_port)
-            *SPI2_port |= (1 << SPI2_pin);
+        if(spi2_port)
+            *spi2_port |= (1 << spi2_pin);
 }

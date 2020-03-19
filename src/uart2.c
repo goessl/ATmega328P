@@ -1,5 +1,5 @@
-﻿/*
- * UART2.c
+/*
+ * uart2.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -33,8 +33,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
-#include "RING.h"
-#include "UART2.h"
+#include "ring.h"
+#include "uart2.h"
 
 
 
@@ -49,43 +49,43 @@
 
 
 
-static int UART2_putc(char c, FILE* stream)
+static int uart2_putc(char c, FILE* stream)
 {
     (void)stream;
-    if(UART2_transmit(c))
+    if(uart2_transmit(c))
         return _FDEV_EOF;
     
     return c;
 }
 
-static int UART2_getc(FILE* stream)
+static int uart2_getc(FILE* stream)
 {
     char c;
     
     (void)stream;
-    if(UART2_receive((uint8_t*)&c))
+    if(uart2_receive((uint8_t*)&c))
         return _FDEV_EOF;
     
     return c;
 }
 
-FILE UART2_out = FDEV_SETUP_STREAM(UART2_putc, NULL, _FDEV_SETUP_WRITE);
-FILE UART2_in = FDEV_SETUP_STREAM(NULL, UART2_getc, _FDEV_SETUP_READ);
+FILE uart2_out = FDEV_SETUP_STREAM(uart2_putc, NULL, _FDEV_SETUP_WRITE);
+FILE uart2_in = FDEV_SETUP_STREAM(NULL, uart2_getc, _FDEV_SETUP_READ);
 
 
 
-static volatile uint8_t UART2_transmitArray[UART2_BUF_LEN],
-    UART2_receiveArray[UART2_BUF_LEN];
-static volatile RING_t UART2_transmitBuf, UART2_receiveBuf;
+static volatile uint8_t uart2_transmitArray[UART2_BUF_LEN],
+    uart2_receiveArray[UART2_BUF_LEN];
+static volatile ring_t uart2_transmitBuf, uart2_receiveBuf;
 
 
 
-void UART2_init(void)
+void uart2_init(void)
 {
-    UART2_transmitBuf =
-        RING_init((uint8_t*)UART2_transmitArray, UART2_BUF_LEN);
-    UART2_receiveBuf =
-        RING_init((uint8_t*)UART2_receiveArray, UART2_BUF_LEN);
+    uart2_transmitBuf =
+        ring_init((uint8_t*)uart2_transmitArray, UART2_BUF_LEN);
+    uart2_receiveBuf =
+        ring_init((uint8_t*)uart2_receiveArray, UART2_BUF_LEN);
     
     
     UBRR0H = UBRRH_VALUE;
@@ -97,26 +97,26 @@ void UART2_init(void)
     UCSR0B |= (1 << RXCIE0) | (1 << RXEN0) | (1 << TXEN0);
     
     #ifndef NO_UART_STD
-        stdout = &UART2_out;
-        stdin = &UART2_in;
+        stdout = &uart2_out;
+        stdin = &uart2_in;
     #endif
 }
 
 
 
-size_t UART2_transmitAvailable(void)
+size_t uart2_transmitAvailable(void)
 {
     size_t ret;
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        ret = RING_pushAvailable(UART2_transmitBuf);
+        ret = ring_pushAvailable(uart2_transmitBuf);
     }
     
     return ret;
 }
 
-void UART2_transmitFlush(void)
+void uart2_transmitFlush(void)
 {
     bool empty;
     
@@ -124,23 +124,23 @@ void UART2_transmitFlush(void)
     {
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
-            empty = RING_isEmpty(UART2_transmitBuf);
+            empty = ring_isEmpty(uart2_transmitBuf);
         }
     } while(!empty);
 }
 
-bool UART2_transmit(uint8_t data)
+bool uart2_transmit(uint8_t data)
 {
     bool fail;
     
     
-    while(UART2_transmitAvailable() < 1)
+    while(uart2_transmitAvailable() < 1)
         ;
     
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        fail = RING_push((RING_t*)&UART2_transmitBuf, data);
+        fail = ring_push((ring_t*)&uart2_transmitBuf, data);
     }
     
     if(!fail)
@@ -149,58 +149,58 @@ bool UART2_transmit(uint8_t data)
     return fail;
 }
 
-size_t UART2_transmitBurst(uint8_t* data, size_t len)
+size_t uart2_transmitBurst(uint8_t* data, size_t len)
 {
     size_t i = 0;
     
-    while(i<len && !UART2_transmit(*data++))
+    while(i<len && !uart2_transmit(*data++))
         i++;
     
     return i;
 }
 
 
-size_t UART2_receiveAvailable(void)
+size_t uart2_receiveAvailable(void)
 {
     size_t ret;
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        ret = RING_popAvailable(UART2_receiveBuf);
+        ret = ring_popAvailable(uart2_receiveBuf);
     }
     
     return ret;
 }
 
-bool UART2_receivePeek(uint8_t* data)
+bool uart2_receivePeek(uint8_t* data)
 {
     bool ret;
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        ret = RING_peek((RING_t*)&UART2_receiveBuf, data);
+        ret = ring_peek((ring_t*)&uart2_receiveBuf, data);
     }
     
     return ret;
 }
 
-bool UART2_receive(uint8_t* data)
+bool uart2_receive(uint8_t* data)
 {
     bool ret;
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        ret = RING_pop((RING_t*)&UART2_receiveBuf, data);
+        ret = ring_pop((ring_t*)&uart2_receiveBuf, data);
     }
     
     return ret;
 }
 
-size_t UART2_receiveBurst(uint8_t* data, size_t len)
+size_t uart2_receiveBurst(uint8_t* data, size_t len)
 {
     size_t i = 0;
     
-    while(i<len && !UART2_receive(data++))
+    while(i<len && !uart2_receive(data++))
         i++;
     
     return i;
@@ -212,7 +212,7 @@ ISR(USART_UDRE_vect)
 {
     uint8_t c;
     
-    if(!RING_pop((RING_t*)&UART2_transmitBuf, &c))
+    if(!ring_pop((ring_t*)&uart2_transmitBuf, &c))
         UDR0 = c;
     else
         UCSR0B &= ~(1 << UDRIE0);
@@ -221,8 +221,8 @@ ISR(USART_UDRE_vect)
 ISR(USART_RX_vect)
 {
     #ifdef UART2_OVERWRITE
-        RING_pushOver((RING_t*)&UART2_receiveBuf, UDR0);
+        ring_pushOver((ring_t*)&uart2_receiveBuf, UDR0);
     #else
-        RING_push((RING_t*)&UART2_receiveBuf, UDR0);
+        ring_push((ring_t*)&uart2_receiveBuf, UDR0);
     #endif
 }

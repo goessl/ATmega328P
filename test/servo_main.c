@@ -1,5 +1,5 @@
-﻿/*
- * TWI2.h
+/*
+ * servo_main.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,33 +30,60 @@
 
 
 
-#ifndef TWI2_H_
-#define TWI2_H_
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
+#include "servo.h"
 
 
 
-#ifndef TWI_FREQUENCY
-    #define TWI_FREQUENCY 400000
-#endif
-
-#define TWI_ADDRESS_W(x)    (((x) << 1) & ~0x01)
-#define TWI_ADDRESS_R(x)    (((x) << 1) | 0x01)
+void init(void);
 
 
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
+#define SERVO_N 4
+
+uint8_t* DDRs[SERVO_N] = {
+    (uint8_t*)&DDRB,
+    (uint8_t*)&DDRB,
+    (uint8_t*)&DDRB,
+    (uint8_t*)&DDRB};
+uint8_t* PORTS[SERVO_N] = {
+    (uint8_t*)&PORTB,
+    (uint8_t*)&PORTB,
+    (uint8_t*)&PORTB,
+    (uint8_t*)&PORTB};
+uint8_t masks[SERVO_N] = {
+    (uint8_t)(1 << PORTB5),
+    (uint8_t)(1 << PORTB4),
+    (uint8_t)(1 << PORTB3),
+    (uint8_t)(1 << PORTB2)};
 
 
 
-void TWI2_init(void);
+int main(void)
+{
+    size_t i;
+    uint8_t servos[SERVO_N] = {0x00, 0xFF/4, 0xFF/2, 0xFF/4*3};
+    
+    
+    
+    init();
+    
+    while(1)
+    {
+        servo_setServos(servos);
+        for(i=0; i<SERVO_N; i++)
+        {
+            servos[i]++;
+        }
+        
+        _delay_ms(50);
+    }
+}
 
-bool TWI2_busy(void);
-void TWI2_flush(void);
-
-void TWI2_start(uint8_t address, uint8_t* data, size_t len);
-
-
-
-#endif /* TWI2_H_ */
+void init(void)
+{
+    servo_init(DDRs, PORTS, masks, SERVO_N);
+    sei();
+}

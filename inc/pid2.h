@@ -1,5 +1,5 @@
-﻿/*
- * ESC.c
+/*
+ * pid2.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -7,7 +7,7 @@
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2019 Sebastian Gössl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,59 +30,52 @@
 
 
 
-#include <util/delay.h>
-#include "Servo.h"
-#include "ESC.h"
+#ifndef PID2_H_
+#define PID2_H_
 
 
 
-void ESC_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
+#include <stddef.h>
+#include <stdint.h>
+
+
+
+#ifndef PID2_TIMER
+    #define PID2_TIMER 2
+#endif
+
+
+
+typedef struct
 {
-    SERVO_init(DDRs, PORTs, masks, n);
+    double* w;
+    double* y;
+    double* x;
     
-    SERVO_setAllServos(0x00);
-    _delay_ms(4000);
-}
-
-void ESC_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
-{
-    SERVO_init(DDRs, PORTs, masks, n);
+    double kp, ki, kd;
     
-    SERVO_setAllServos(0xFF);
-    _delay_ms(4000);
-    
-    SERVO_setAllServos(0x00);
-    _delay_ms(4000);
-}
+    double sum, last;
+    double iMax, dMax, outMax;
+} pid_t;
 
 
 
-void ESC_setMotor(size_t index, uint8_t value)
-{
-    SERVO_setServo(index, value);
-}
+#define PID2_INIT_CONTROLLER(w_, y_, x_, kp_, ki_, kd_, iMax_, dMax_, outMax_) \
+    ((pid_t){.w = (w_), .y = (y_), .x = (x_), \
+        .kp = (kp_), .ki = (ki_), .kd = (kd_), \
+        .sum = 0, .last = 0, \
+        .iMax = (iMax_), .dMax = (dMax_), .outMax = (outMax_)})
 
-void ESC_setMotorScaled(size_t index, double percent)
-{
-    SERVO_setServoScaled(index, percent);
-}
 
-void ESC_setMotors(uint8_t* values)
-{
-    SERVO_setServos(values);
-}
 
-void ESC_setMotorsScaled(double* percents)
-{
-    SERVO_setServosScaled(percents);
-}
+void pid2_init(pid_t* controllers, size_t n);
 
-void ESC_setAllMotors(uint8_t value)
-{
-    SERVO_setAllServos(value);
-}
+pid_t pid2_initController(double* w, double* y, double* x,
+    double kp, double ki, double kd,
+    double iMax, double dMax, double outMax);
 
-void ESC_setAllMotorsScaled(double percent)
-{
-    SERVO_setAllServosScaled(percent);
-}
+uint32_t pid2_iterate(void);
+
+
+
+#endif /* PID_H_ */

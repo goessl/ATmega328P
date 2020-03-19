@@ -1,7 +1,8 @@
-﻿/*
- * RING.h
+/*
+ * uart_main.c
  * 
  * Author:      Sebastian Gössl
+ * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
@@ -29,46 +30,34 @@
 
 
 
-#ifndef RING_H_
-#define RING_H_
+
+#include "uart.h"
+#include <stdio.h>
 
 
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+#define MAX_LENGTH 80
 
 
 
-typedef struct
+void init(void);
+
+int main(void)
 {
-    uint8_t* buf;
-    uint8_t* end;
-    uint8_t* write;
-    uint8_t* read;
-} RING_t;
+    char s[MAX_LENGTH];
+    
+    
+    
+    init();
+    
+    while(1)
+    {
+        fgets(s, MAX_LENGTH, &uart_in);
+        fputs(s, &uart_out);
+    }
+}
 
-
-
-#define RING_INIT(buf_, len_) \
-    ((RING_t){.buf = (buf_), .end = (buf_)+(len_), \
-        .write = (buf_), .read = (buf_)})
-
-
-
-RING_t RING_init(uint8_t* buf, size_t len);
-
-bool RING_isEmpty(RING_t ring);
-bool RING_isFull(RING_t ring);
-size_t RING_pushAvailable(RING_t ring);
-size_t RING_popAvailable(RING_t ring);
-
-bool RING_push(RING_t* ring, uint8_t data);
-bool RING_pushOver(RING_t* ring, uint8_t data);
-
-bool RING_pop(RING_t* ring, uint8_t* data);
-bool RING_peek(RING_t* ring, uint8_t* data);
-
-
-
-#endif /* RING_H_ */
+void init(void)
+{
+    uart_init();
+}

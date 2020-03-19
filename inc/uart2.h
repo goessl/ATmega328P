@@ -1,5 +1,5 @@
 /*
- * ADC_main.c
+ * uart2.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,40 +30,45 @@
 
 
 
-#include <avr/interrupt.h>
-#include <util/delay.h>
+#ifndef UART2_H_
+#define UART2_H_
+
+
+
+#ifndef BAUD
+    #define BAUD 9600
+#endif
+
+#ifndef UART2_BUF_LEN
+    #define UART2_BUF_LEN 80
+#endif
+
+
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
-#include "ADC.h"
-#include "UART.h"
 
 
 
-void init(void);
+extern FILE uart2_out;
+extern FILE uart2_in;
 
-int main(void)
-{
-    size_t i;
-    uint16_t channels[ADC_N];
-    
-    
-    
-    init();
-    
-    while(1)
-    {
-        ADC_getAll(channels);
-        for(i=0; i<ADC_N-1; i++)
-        {
-            printf("%4d, ", channels[i]);
-        }
-        printf("%4d\n", channels[ADC_N-1]);
-        _delay_ms(250);
-    }
-}
 
-void init(void)
-{
-    UART_init();
-    ADC_init();
-    sei();
-}
+
+void uart2_init(void);
+
+size_t uart2_transmitAvailable(void);
+void uart2_transmitFlush(void);
+bool uart2_transmit(uint8_t data);
+size_t uart2_transmitBurst(uint8_t* data, size_t len);
+
+size_t uart2_receiveAvailable(void);
+bool uart2_receivePeek(uint8_t* data);
+bool uart2_receive(uint8_t* data);
+size_t uart2_receiveBurst(uint8_t* data, size_t len);
+
+
+
+#endif /* UART2_H_ */

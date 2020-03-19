@@ -1,8 +1,7 @@
 /*
- * UART.h
+ * ring.h
  * 
  * Author:      Sebastian Gössl
- * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
@@ -30,40 +29,46 @@
 
 
 
-#ifndef UART_H_
-#define UART_H_
+#ifndef RING_H_
+#define RING_H_
 
 
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 
 
 
-#ifndef BAUD
-    #define BAUD 9600
-#endif
-
-#ifndef UART_BAUD_TOL
-    #define UART_BAUD_TOL 2
-#endif
-
-
-
-extern FILE UART_out;
-extern FILE UART_in;
+typedef struct
+{
+    uint8_t* buf;
+    uint8_t* end;
+    uint8_t* write;
+    uint8_t* read;
+} ring_t;
 
 
 
-void UART_init(void);
-
-void UART_transmit(uint8_t data);
-void UART_transmitBurst(uint8_t* data, size_t len);
-
-uint8_t UART_receive(void);
-void UART_receiveBurst(uint8_t* data, size_t len);
+#define RING_INIT(buf_, len_) \
+    ((ring_t){.buf = (buf_), .end = (buf_)+(len_), \
+        .write = (buf_), .read = (buf_)})
 
 
 
-#endif /* UART_H_ */
+ring_t ring_init(uint8_t* buf, size_t len);
+
+bool ring_isEmpty(ring_t ring);
+bool ring_isFull(ring_t ring);
+size_t ring_pushAvailable(ring_t ring);
+size_t ring_popAvailable(ring_t ring);
+
+bool ring_push(ring_t* ring, uint8_t data);
+bool ring_pushOver(ring_t* ring, uint8_t data);
+
+bool ring_pop(ring_t* ring, uint8_t* data);
+bool ring_peek(ring_t* ring, uint8_t* data);
+
+
+
+#endif /* RING_H_ */

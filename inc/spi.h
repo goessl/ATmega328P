@@ -1,5 +1,5 @@
 /*
- * SPI2.h
+ * spi.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -7,7 +7,7 @@
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2019 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Gössl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,12 +30,11 @@
 
 
 
-#ifndef SPI2_H_
-#define SPI2_H_
+#ifndef SPI_H_
+#define SPI_H_
 
 
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -55,14 +54,11 @@
 
 
 
-void SPI2_init(void);
+void spi_init(void);
 
-bool SPI2_isBusy(void);
-void SPI2_flush(void);
-
-void SPI2_transmitBurst(uint8_t* out, uint8_t* in, size_t len,
-    uint8_t* port, uint8_t pin);
+uint8_t spi_transmit(uint8_t data);
+void spi_transmitBurst(uint8_t* out, uint8_t* in, size_t len);
 
 
 
-#endif /* SPI2_H_ */
+#endif /* SPI_H_ */

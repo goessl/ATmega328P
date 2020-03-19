@@ -1,5 +1,5 @@
-﻿/*
- * TWI.h
+/*
+ * esc.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,47 +30,26 @@
 
 
 
-#ifndef TWI_H_
-#define TWI_H_
+#ifndef ESC_H_
+#define ESC_H_
 
 
 
-#ifndef TWI_FREQUENCY
-    #define TWI_FREQUENCY 400000
-#endif
-
-
-
-#include <stdbool.h>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 
 
-void TWI_init(void);
+void esc_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n);
+void esc_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n);
 
-bool TWI_start(void);
-bool TWI_repStart(void);
-void TWI_stop(void);
-
-bool TWI_addressWrite(uint8_t address);
-bool TWI_addressRead(uint8_t address);
-
-bool TWI_write(uint8_t data);
-bool TWI_writeBurst(uint8_t* data, size_t len);
-
-bool TWI_readAck(uint8_t* data);
-bool TWI_readAckBurst(uint8_t* data, size_t len);
-bool TWI_readNoAck(uint8_t* data);
-bool TWI_readNoAckBurst(uint8_t* data, size_t len);
-
-bool TWI_writeToSlave(uint8_t address, uint8_t* data, size_t len);
-bool TWI_readFromSlave(uint8_t address, uint8_t* data, size_t len);
-bool TWI_writeToSlaveRegister(
-    uint8_t address, uint8_t reg, uint8_t* data, size_t len);
-bool TWI_readFromSlaveRegister(
-    uint8_t address, uint8_t reg, uint8_t* data, size_t len);
+void esc_setMotor(size_t index, uint8_t value);
+void esc_setMotorScaled(size_t index, double percent);
+void esc_setMotors(uint8_t* values);
+void esc_setMotorsScaled(double* percents);
+void esc_setAllMotors(uint8_t value);
+void esc_setAllMotorsScaled(double percent);
 
 
 
-#endif /* TWI_H_ */
+#endif /* ESC_H_ */

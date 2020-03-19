@@ -1,13 +1,13 @@
-ï»¿/*
- * Servo.h
+/*
+ * spi2.h
  * 
- * Author:      Sebastian GÃ¶ssl
+ * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian GÃ¶ssl
+ * Copyright (c) 2019 Sebastian Gössl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,31 +30,39 @@
 
 
 
-#ifndef SERVO_H_
-#define SERVO_H_
+#ifndef SPI2_H_
+#define SPI2_H_
 
 
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 
 
-#ifndef SERVO_TIMER
-    #define SERVO_TIMER 1
+#ifndef SPI_FREQUENCY
+    #define SPI_FREQUENCY 1000000
+#endif
+
+#ifndef SPI_MODE
+    #define SPI_MODE 0
+#endif
+
+#ifndef SPI_DORD
+    #define SPI_DORD 0
 #endif
 
 
 
-void SERVO_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* MASKS, size_t n);
+void spi2_init(void);
 
-void SERVO_setServo(size_t index, uint8_t value);
-void SERVO_setServoScaled(size_t index, double percent);
-void SERVO_setServos(uint8_t* values);
-void SERVO_setServosScaled(double* percents);
-void SERVO_setAllServos(uint8_t value);
-void SERVO_setAllServosScaled(double percent);
+bool spi2_isBusy(void);
+void spi2_flush(void);
 
+void spi2_transmitBurst(uint8_t* out, uint8_t* in, size_t len,
+    uint8_t* port, uint8_t pin);
 
 
-#endif /* SERVO_H_ */
+
+#endif /* SPI2_H_ */

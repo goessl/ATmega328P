@@ -1,5 +1,5 @@
-﻿/*
- * ADC.h
+/*
+ * uart.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,30 +30,40 @@
 
 
 
-#ifndef ADC_H_
-#define ADC_H_
+#ifndef UART_H_
+#define UART_H_
 
 
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 
 
-#define ADC_N 8
-#define ADC_FREQUENCY_MAX 200000
-#define ADC_FREQUENCY_MIN 50000
-#define ADC_TOP 0x3FF
+#ifndef BAUD
+    #define BAUD 9600
+#endif
+
+#ifndef UART_BAUD_TOL
+    #define UART_BAUD_TOL 2
+#endif
 
 
 
-void ADC_init(void);
-
-uint16_t ADC_get(size_t index);
-double ADC_getScaled(size_t index);
-void ADC_getAll(uint16_t* channel);
-void ADC_getAllScaled(double* channel);
+extern FILE uart_out;
+extern FILE uart_in;
 
 
 
-#endif /* ADC_H_ */
+void uart_init(void);
+
+void uart_transmit(uint8_t data);
+void uart_transmitBurst(uint8_t* data, size_t len);
+
+uint8_t uart_receive(void);
+void uart_receiveBurst(uint8_t* data, size_t len);
+
+
+
+#endif /* UART_H_ */

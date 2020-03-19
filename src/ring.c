@@ -1,5 +1,5 @@
-﻿/*
- * RING.c
+/*
+ * ring.c
  * 
  * Author:      Sebastian Gössl
  * 
@@ -29,7 +29,7 @@
 
 
 
-#include "RING.h"
+#include "ring.h"
 
 
 
@@ -37,24 +37,24 @@
 
 
 
-RING_t RING_init(uint8_t* buf, size_t len)
+ring_t ring_init(uint8_t* buf, size_t len)
 {
     return RING_INIT(buf, len);
 }
 
 
 
-bool RING_isEmpty(RING_t ring)
+bool ring_isEmpty(ring_t ring)
 {
     return ring.read == ring.write;
 }
 
-bool RING_isFull(RING_t ring)
+bool ring_isFull(ring_t ring)
 {
     return RING_INC_ROLL_OVER(ring.write, ring.buf, ring.end) == ring.read;
 }
 
-size_t RING_pushAvailable(RING_t ring)
+size_t ring_pushAvailable(ring_t ring)
 {
     if(ring.write < ring.read)
         return ring.read - ring.write - 1;
@@ -62,7 +62,7 @@ size_t RING_pushAvailable(RING_t ring)
         return (ring.end - ring.buf) - (ring.write - ring.read) - 1;
 }
 
-size_t RING_popAvailable(RING_t ring)
+size_t ring_popAvailable(ring_t ring)
 {
     if(ring.read <= ring.write)
         return ring.write - ring.read;
@@ -71,9 +71,9 @@ size_t RING_popAvailable(RING_t ring)
 }
 
 
-bool RING_push(RING_t* ring, uint8_t data)
+bool ring_push(ring_t* ring, uint8_t data)
 {
-    if(RING_isFull(*ring))
+    if(ring_isFull(*ring))
         return 1;
     
     *ring->write = data;
@@ -82,7 +82,7 @@ bool RING_push(RING_t* ring, uint8_t data)
     return 0;
 }
 
-bool RING_pushOver(RING_t* ring, uint8_t data)
+bool ring_pushOver(ring_t* ring, uint8_t data)
 {
     *ring->write = data;
     ring->write = RING_INC_ROLL_OVER(ring->write, ring->buf, ring->end);
@@ -97,9 +97,9 @@ bool RING_pushOver(RING_t* ring, uint8_t data)
 }
 
 
-bool RING_pop(RING_t* ring, uint8_t* data)
+bool ring_pop(ring_t* ring, uint8_t* data)
 {
-    if(RING_isEmpty(*ring))
+    if(ring_isEmpty(*ring))
         return 1;
     
     *data = *ring->read;
@@ -108,9 +108,9 @@ bool RING_pop(RING_t* ring, uint8_t* data)
     return 0;
 }
 
-bool RING_peek(RING_t* ring, uint8_t* data)
+bool ring_peek(ring_t* ring, uint8_t* data)
 {
-    if(RING_isEmpty(*ring))
+    if(ring_isEmpty(*ring))
         return 1;
     
     *data = *ring->read;

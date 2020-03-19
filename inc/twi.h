@@ -1,13 +1,13 @@
 /*
- * SPI.h
+ * twi.h
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian GÃ¶ssl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian GÃ¶ssl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,35 +30,47 @@
 
 
 
-#ifndef SPI_H_
-#define SPI_H_
+#ifndef TWI_H_
+#define TWI_H_
 
 
 
-#include <stddef.h>
+#ifndef TWI_FREQUENCY
+    #define TWI_FREQUENCY 400000
+#endif
+
+
+
+#include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
 
 
-#ifndef SPI_FREQUENCY
-    #define SPI_FREQUENCY 1000000
-#endif
+void twi_init(void);
 
-#ifndef SPI_MODE
-    #define SPI_MODE 0
-#endif
+bool twi_start(void);
+bool twi_repStart(void);
+void twi_stop(void);
 
-#ifndef SPI_DORD
-    #define SPI_DORD 0
-#endif
+bool twi_addressWrite(uint8_t address);
+bool twi_addressRead(uint8_t address);
+
+bool twi_write(uint8_t data);
+bool twi_writeBurst(uint8_t* data, size_t len);
+
+bool twi_readAck(uint8_t* data);
+bool twi_readAckBurst(uint8_t* data, size_t len);
+bool twi_readNoAck(uint8_t* data);
+bool twi_readNoAckBurst(uint8_t* data, size_t len);
+
+bool twi_writeToSlave(uint8_t address, uint8_t* data, size_t len);
+bool twi_readFromSlave(uint8_t address, uint8_t* data, size_t len);
+bool twi_writeToSlaveRegister(
+    uint8_t address, uint8_t reg, uint8_t* data, size_t len);
+bool twi_readFromSlaveRegister(
+    uint8_t address, uint8_t reg, uint8_t* data, size_t len);
 
 
 
-void SPI_init(void);
-
-uint8_t SPI_transmit(uint8_t data);
-void SPI_transmitBurst(uint8_t* out, uint8_t* in, size_t len);
-
-
-
-#endif /* SPI_H_ */
+#endif /* TWI_H_ */

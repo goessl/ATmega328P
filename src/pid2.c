@@ -1,5 +1,5 @@
-﻿/*
- * PID2.c
+/*
+ * pid2.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -33,7 +33,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
-#include "PID2.h"
+#include "pid2.h"
 
 
 
@@ -47,16 +47,16 @@
 
 
 
-static volatile uint16_t PID2_overflows = 0;
-static volatile PID_t* PID2_controllers;
-static volatile size_t PID2_n;
+static volatile uint16_t pid2_overflows = 0;
+static volatile pid_t* pid2_controllers;
+static volatile size_t pid2_n;
 
 
 
-void PID2_init(PID_t* controllers, size_t n)
+void pid2_init(pid_t* controllers, size_t n)
 {
-    PID2_controllers = controllers;
-    PID2_n = n;
+    pid2_controllers = controllers;
+    pid2_n = n;
     
     
     
@@ -86,7 +86,7 @@ void PID2_init(PID_t* controllers, size_t n)
     #endif
 }
 
-PID_t PID2_initController(double* w, double* y, double* x,
+pid_t pid2_initController(double* w, double* y, double* x,
     double kp, double ki, double kd,
     double iMax, double dMax, double outMax)
 {
@@ -95,7 +95,7 @@ PID_t PID2_initController(double* w, double* y, double* x,
 
 
 
-static void PID2_iterateSingle(PID_t* controller, double dt)
+static void pid2_iterateSingle(pid_t* controller, double dt)
 {
     double derivative, y;
     double e = *controller->w - *controller->x;
@@ -118,7 +118,7 @@ static void PID2_iterateSingle(PID_t* controller, double dt)
 
 
 
-uint32_t PID2_iterate(void)
+uint32_t pid2_iterate(void)
 {
     size_t i;
     uint32_t ticks;
@@ -128,15 +128,15 @@ uint32_t PID2_iterate(void)
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        ticks = (uint32_t)PID2_TIMER_TOP * PID2_overflows + PID2_TIMER_TCNT;
+        ticks = (uint32_t)PID2_TIMER_TOP * pid2_overflows + PID2_TIMER_TCNT;
     }
     PID2_TIMER_TCNT = 0;
-    PID2_overflows = 0;
+    pid2_overflows = 0;
     
     dt = (double)ticks / F_CPU;
     
-    for(i=0; i<PID2_n; i++)
-        PID2_iterateSingle((PID_t*)&PID2_controllers[i], dt);
+    for(i=0; i<pid2_n; i++)
+        pid2_iterateSingle((pid_t*)&pid2_controllers[i], dt);
     
     
     return ticks;
@@ -146,6 +146,6 @@ uint32_t PID2_iterate(void)
 
 ISR(PID2_vect)
 {
-    if(PID2_overflows < UINT16_MAX)
-        PID2_overflows++;
+    if(pid2_overflows < UINT16_MAX)
+        pid2_overflows++;
 }

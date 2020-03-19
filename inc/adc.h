@@ -1,5 +1,5 @@
 /*
- * Servo_main.c
+ * adc.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,60 +30,30 @@
 
 
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <util/delay.h>
-#include "Servo.h"
+#ifndef ADC_H_
+#define ADC_H_
 
 
 
-void init(void);
+#include <stddef.h>
+#include <stdint.h>
 
 
 
-#define SERVO_N 4
-
-uint8_t* DDRs[SERVO_N] = {
-    (uint8_t*)&DDRB,
-    (uint8_t*)&DDRB,
-    (uint8_t*)&DDRB,
-    (uint8_t*)&DDRB};
-uint8_t* PORTS[SERVO_N] = {
-    (uint8_t*)&PORTB,
-    (uint8_t*)&PORTB,
-    (uint8_t*)&PORTB,
-    (uint8_t*)&PORTB};
-uint8_t masks[SERVO_N] = {
-    (uint8_t)(1 << PORTB5),
-    (uint8_t)(1 << PORTB4),
-    (uint8_t)(1 << PORTB3),
-    (uint8_t)(1 << PORTB2)};
+#define ADC_N 8
+#define ADC_FREQUENCY_MAX 200000
+#define ADC_FREQUENCY_MIN 50000
+#define ADC_TOP 0x3FF
 
 
 
-int main(void)
-{
-    size_t i;
-    uint8_t servos[SERVO_N] = {0x00, 0xFF/4, 0xFF/2, 0xFF/4*3};
-    
-    
-    
-    init();
-    
-    while(1)
-    {
-        SERVO_setServos(servos);
-        for(i=0; i<SERVO_N; i++)
-        {
-            servos[i]++;
-        }
-        
-        _delay_ms(50);
-    }
-}
+void adc_init(void);
 
-void init(void)
-{
-    SERVO_init(DDRs, PORTS, masks, SERVO_N);
-    sei();
-}
+uint16_t adc_get(size_t index);
+double adc_getScaled(size_t index);
+void adc_getAll(uint16_t* channel);
+void adc_getAllScaled(double* channel);
+
+
+
+#endif /* ADC_H_ */

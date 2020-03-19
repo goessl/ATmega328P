@@ -1,5 +1,5 @@
 /*
- * UART_main.c
+ * twi2.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,34 +30,33 @@
 
 
 
-
-#include "UART.h"
-#include <stdio.h>
-
-
-
-#define MAX_LENGTH 80
+#ifndef TWI2_H_
+#define TWI2_H_
 
 
 
-void init(void);
+#ifndef TWI_FREQUENCY
+    #define TWI_FREQUENCY 400000
+#endif
 
-int main(void)
-{
-    char s[MAX_LENGTH];
-    
-    
-    
-    init();
-    
-    while(1)
-    {
-        fgets(s, MAX_LENGTH, &UART_in);
-        fputs(s, &UART_out);
-    }
-}
+#define TWI_ADDRESS_W(x)    (((x) << 1) & ~0x01)
+#define TWI_ADDRESS_R(x)    (((x) << 1) | 0x01)
 
-void init(void)
-{
-    UART_init();
-}
+
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
+
+
+
+void twi2_init(void);
+
+bool twi2_busy(void);
+void twi2_flush(void);
+
+void twi2_start(uint8_t address, uint8_t* data, size_t len);
+
+
+
+#endif /* TWI2_H_ */

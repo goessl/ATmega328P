@@ -1,5 +1,5 @@
-﻿/*
- * UART2.h
+/*
+ * servo.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,45 +30,31 @@
 
 
 
-#ifndef UART2_H_
-#define UART2_H_
+#ifndef SERVO_H_
+#define SERVO_H_
 
 
 
-#ifndef BAUD
-    #define BAUD 9600
-#endif
-
-#ifndef UART2_BUF_LEN
-    #define UART2_BUF_LEN 80
-#endif
-
-
-
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 
 
 
-extern FILE UART2_out;
-extern FILE UART2_in;
+#ifndef SERVO_TIMER
+    #define SERVO_TIMER 1
+#endif
 
 
 
-void UART2_init(void);
+void servo_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* MASKS, size_t n);
 
-size_t UART2_transmitAvailable(void);
-void UART2_transmitFlush(void);
-bool UART2_transmit(uint8_t data);
-size_t UART2_transmitBurst(uint8_t* data, size_t len);
-
-size_t UART2_receiveAvailable(void);
-bool UART2_receivePeek(uint8_t* data);
-bool UART2_receive(uint8_t* data);
-size_t UART2_receiveBurst(uint8_t* data, size_t len);
+void servo_setServo(size_t index, uint8_t value);
+void servo_setServoScaled(size_t index, double percent);
+void servo_setServos(uint8_t* values);
+void servo_setServosScaled(double* percents);
+void servo_setAllServos(uint8_t value);
+void servo_setAllServosScaled(double percent);
 
 
 
-#endif /* UART2_H_ */
+#endif /* SERVO_H_ */

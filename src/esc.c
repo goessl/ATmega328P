@@ -1,5 +1,5 @@
 /*
- * SPI_main.c
+ * esc.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,35 +30,59 @@
 
 
 
-#include <stdio.h>
-#include "SPI.h"
-#include "UART.h"
+#include <util/delay.h>
+#include "servo.h"
+#include "esc.h"
 
 
 
-void init(void);
-
-int main(void)
+void esc_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
 {
-    uint16_t byte;
+    servo_init(DDRs, PORTs, masks, n);
     
-    
-    
-    init();
-    
-    printf("Sent : Received\n");
-    for(byte=0x00; byte<=0xFF; byte++)
-    {
-        printf("0x%02X : 0x%02X\n", (uint8_t)byte, SPI_transmit(byte));
-    }
-    
-    while(1)
-    {
-    }
+    servo_setAllServos(0x00);
+    _delay_ms(4000);
 }
 
-void init(void)
+void esc_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
 {
-    UART_init();
-    SPI_init();
+    servo_init(DDRs, PORTs, masks, n);
+    
+    servo_setAllServos(0xFF);
+    _delay_ms(4000);
+    
+    servo_setAllServos(0x00);
+    _delay_ms(4000);
+}
+
+
+
+void esc_setMotor(size_t index, uint8_t value)
+{
+    servo_setServo(index, value);
+}
+
+void esc_setMotorScaled(size_t index, double percent)
+{
+    servo_setServoScaled(index, percent);
+}
+
+void esc_setMotors(uint8_t* values)
+{
+    servo_setServos(values);
+}
+
+void esc_setMotorsScaled(double* percents)
+{
+    servo_setServosScaled(percents);
+}
+
+void esc_setAllMotors(uint8_t value)
+{
+    servo_setAllServos(value);
+}
+
+void esc_setAllMotorsScaled(double percent)
+{
+    servo_setAllServosScaled(percent);
 }
