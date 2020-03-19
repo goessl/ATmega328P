@@ -143,12 +143,10 @@ bool UART2_transmit(uint8_t data)
         fail = RING_push((RING_t*)&UART2_transmitBuf, data);
     }
     
-    if(fail)
-        return 1;
+    if(!fail)
+        UCSR0B |= (1 << UDRIE0);
     
-    UCSR0B |= (1 << UDRIE0);
-    
-    return 0;
+    return fail;
 }
 
 size_t UART2_transmitBurst(uint8_t* data, size_t len)

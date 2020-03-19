@@ -95,7 +95,7 @@ PID_t PID2_initController(double* w, double* y, double* x,
 
 
 
-static void PID2_iterate(PID_t* controller, double dt)
+static void PID2_iterateSingle(PID_t* controller, double dt)
 {
     double derivative, y;
     double e = *controller->w - *controller->x;
@@ -118,7 +118,7 @@ static void PID2_iterate(PID_t* controller, double dt)
 
 
 
-uint32_t PID2_iterateAll(void)
+uint32_t PID2_iterate(void)
 {
     size_t i;
     uint32_t ticks;
@@ -136,7 +136,7 @@ uint32_t PID2_iterateAll(void)
     dt = (double)ticks / F_CPU;
     
     for(i=0; i<PID2_n; i++)
-        PID2_iterate((PID_t*)&PID2_controllers[i], dt);
+        PID2_iterateSingle((PID_t*)&PID2_controllers[i], dt);
     
     
     return ticks;

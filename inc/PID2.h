@@ -74,7 +74,7 @@ PID_t PID2_initController(double* w, double* y, double* x,
     double kp, double ki, double kd,
     double iMax, double dMax, double outMax);
 
-uint32_t PID2_iterateAll(void);
+uint32_t PID2_iterate(void);
 
 
 
