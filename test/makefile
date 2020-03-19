@@ -50,15 +50,6 @@ ADC.o: $(SRC)/ADC.c $(INC)/ADC.h
 ESC.o: $(SRC)/ESC.c $(INC)/ESC.h $(INC)/Servo.h
 	$(CC) $(CFLAGS) -c -o ESC.o $(SRC)/ESC.c
 
-#NRF24L01
-NRF24L01.o: $(SRC)/NRF24L01.c $(INC)/NRF24L01.h $(INC)/SPI.h
-	$(CC) $(CFLAGS) -c -o NRF24L01.o $(SRC)/NRF24L01.c
-
-#NRF24L01_Interrupt
-NRF24L01_Interrupt.o: $(SRC)/NRF24L01_Interrupt.c $(INC)/NRF24L01_Interrupt.h \
-	$(INC)/SPI.h
-	$(CC) $(CFLAGS) -c -o NRF24L01_Interrupt.o $(SRC)/NRF24L01_Interrupt.c
-
 #PID2
 PID2.o: $(SRC)/PID2.c $(INC)/PID2.h
 	$(CC) $(CFLAGS) -c -o PID2.o $(SRC)/PID2.c
