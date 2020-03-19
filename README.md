@@ -2,20 +2,18 @@
 
 Driver library for basic functionalities of the ATmega328P (Arduino UNO)
 microcontroller.
- * UART - UART (blocking)
- * UART2 - UART (interrupt based) (uses RING)
- * SPI - SPI Master
- * SPI2 - SPI Master (interrupt based)
- * TWI - I2C Master
- * TWI2 - I2C Master (interrupt based)
- * ADC - Analog to digital converter (interrupt based)
- * Servo - Servo driver (interrupt based)
- * ESC - ESC driver (uses Servo.h)
- * PID2 - PID controller driver with variable frequency (accessible iterate
+ * uart - UART (blocking)
+ * uart2 - UART (interrupt based) (uses ring.h)
+ * spi - SPI Master
+ * spi2 - SPI Master (interrupt based)
+ * twi - I2C Master
+ * twi2 - I2C Master (interrupt based)
+ * adc - Analog to digital converter (interrupt based)
+ * servo - Servo driver (interrupt based)
+ * esc - ESC driver (uses Servo.h)
+ * pid2 - PID controller driver with variable frequency (accessible iterate
  function) (interrupt based)
- * RING - Ring buffer implementation
- * NRF24L01 - NRF24L01 library (blocking) (uses SPI)
- * NRF24L01_Interrupt - NRF24L01 library (interrupt based) (uses SPI)
+ * ring - Ring buffer implementation
 
 ## Getting Started
 
@@ -77,12 +75,10 @@ example. The hex files can be uploaded to an Arduino UNO with e.g.
  - [ ] Add tests for all modules
  - [ ] Remove useless modules
  - [ ] Add useful documentation
- - [ ] Better design pattern: lower case module names, no camel case function
- names
- - [ ] NRF24L01_Interrupt: Use SPI2
- - [ ] Split NRF24L01 to own repo
  - [ ] Only include what's needed
  - [ ] Timer macros
+ - [x] Better design pattern: lower case module names
+ - [x] Split NRF24L01 to own repo
  - [x] Improve makefile
  - [x] UART redirect standard streams on default
  - [x] Organize directories
