@@ -129,9 +129,9 @@ uint32_t pid2_iterate(void)
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
         ticks = (uint32_t)PID2_TIMER_TOP * pid2_overflows + PID2_TIMER_TCNT;
+        PID2_TIMER_TCNT = 0;
+        pid2_overflows = 0;
     }
-    PID2_TIMER_TCNT = 0;
-    pid2_overflows = 0;
     
     dt = (double)ticks / F_CPU;
     
