@@ -41,8 +41,13 @@
 
 
 
+//Max frequency
 #ifndef SPI_FREQUENCY
     #define SPI_FREQUENCY 1000000
+#endif
+
+#ifndef SPI_MIN_FREQUENCY
+    #define SPI_MIN_FREQUENCY 0
 #endif
 
 #ifndef SPI_MODE

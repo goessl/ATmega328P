@@ -42,43 +42,43 @@
 #endif
 
 
-#if F_CPU / 2 <= SPI_FREQUENCY
+#if SPI_MIN_FREQUENCY <= F_CPU/2 && F_CPU/2 <= SPI_FREQUENCY
     #define SPI_PRESCALER 2
     #define SPR0_VALUE 0
     #define SPR1_VALUE 0
     #define SPI2X_VALUE 1
-#elif F_CPU / 4 <= SPI_FREQUENCY
+#elif SPI_MIN_FREQUENCY <= F_CPU/4 && F_CPU/4 <= SPI_FREQUENCY
     #define SPI_PRESCALER 4
     #define SPR0_VALUE 0
     #define SPR1_VALUE 0
     #define SPI2X_VALUE 0
-#elif F_CPU / 8 <= SPI_FREQUENCY
+#elif SPI_MIN_FREQUENCY <= F_CPU/8 && F_CPU/8 <= SPI_FREQUENCY
     #define SPI_PRESCALER 8
     #define SPR0_VALUE 1
     #define SPR1_VALUE 0
     #define SPI2X_VALUE 1
-#elif F_CPU / 16 <= SPI_FREQUENCY
+#elif SPI_MIN_FREQUENCY <= F_CPU/16 && F_CPU/16 <= SPI_FREQUENCY
     #define SPI_PRESCALER 16
     #define SPR0_VALUE 1
     #define SPR1_VALUE 0
     #define SPI2X_VALUE 0
-#elif F_CPU / 32 <= SPI_FREQUENCY
+#elif SPI_MIN_FREQUENCY <= F_CPU/32 && F_CPU/32 <= SPI_FREQUENCY
     #define SPI_PRESCALER 32
     #define SPR0_VALUE 0
     #define SPR1_VALUE 1
     #define SPI2X_VALUE 1
-#elif F_CPU / 64 <= SPI_FREQUENCY
+#elif SPI_MIN_FREQUENCY <= F_CPU/64 && F_CPU/64 <= SPI_FREQUENCY
     #define SPI_PRESCALER 64
     #define SPR0_VALUE 1
     #define SPR1_VALUE 1
     #define SPI2X_VALUE 1
-#elif F_CPU / 128 <= SPI_FREQUENCY
+#elif SPI_MIN_FREQUENCY <= F_CPU/128 && F_CPU/128 <= SPI_FREQUENCY
     #define SPI_PRESCALER 128
     #define SPR0_VALUE 1
     #define SPR1_VALUE 1
     #define SPI2X_VALUE 0
 #else
-    #error "SPI_FREQUENCY to low!"
+    #error "No valid SPI_PRESCALER found!"
 #endif
 
 #if SPI_MODE == 0
