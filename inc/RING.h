@@ -1,13 +1,12 @@
 /*
- * spi.h
+ * RING.h
  * 
- * Author:      Sebastian Gössl
- * Hardware:    ATmega328P
+ * Author:      Sebastian GÃ¶ssl
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian GÃ¶ssl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,42 +29,46 @@
 
 
 
-#ifndef SPI_H_
-#define SPI_H_
+#ifndef RING_H_
+#define RING_H_
 
 
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 
 
-//Max frequency
-#ifndef SPI_FREQUENCY
-    #define SPI_FREQUENCY 1000000
-#endif
-
-#ifndef SPI_MIN_FREQUENCY
-    #define SPI_MIN_FREQUENCY 0
-#endif
-
-#ifndef SPI_MODE
-    #define SPI_MODE 0
-#endif
-
-#ifndef SPI_DORD
-    #define SPI_DORD 0
-#endif
+typedef struct
+{
+    uint8_t* buf;
+    uint8_t* end;
+    uint8_t* write;
+    uint8_t* read;
+} RING_t;
 
 
 
-void spi_init(void);
-
-uint8_t spi_writeRead(uint8_t data);
-void spi_writeBurst(uint8_t* out, size_t len);
-void spi_readBurst(uint8_t* in, size_t len);
-void spi_writeReadBurst(uint8_t* out, uint8_t* in, size_t len);
+#define RING_INIT(buf_, len_) \
+    ((RING_t){.buf = (buf_), .end = (buf_)+(len_), \
+        .write = (buf_), .read = (buf_)})
 
 
 
-#endif /* SPI_H_ */
+RING_t RING_init(uint8_t* buf, size_t len);
+
+bool RING_isEmpty(RING_t RING);
+bool RING_isFull(RING_t RING);
+size_t RING_pushAvailable(RING_t RING);
+size_t RING_popAvailable(RING_t RING);
+
+bool RING_push(RING_t* RING, uint8_t data);
+bool RING_pushOver(RING_t* RING, uint8_t data);
+
+bool RING_pop(RING_t* RING, uint8_t* data);
+bool RING_peek(RING_t* RING, uint8_t* data);
+
+
+
+#endif /* RING_H_ */

@@ -1,5 +1,5 @@
 /*
- * adc_main.c
+ * ADC.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,38 +30,30 @@
 
 
 
-#include <avr/interrupt.h>
-#include <util/delay.h>
-#include <stdio.h>
-#include "adc.h"
-#include "uart.h"
+#ifndef ADC_H_
+#define ADC_H_
 
 
 
-void init(void);
+#include <stddef.h>
+#include <stdint.h>
 
-int main(void)
-{
-    size_t i;
-    uint16_t channels[ADC_N];
-    
-    
-    
-    init();
-    
-    while(1)
-    {
-        adc_getAll(channels);
-        for(i=0; i<ADC_N-1; i++)
-            printf("%4d, ", channels[i]);
-        printf("%4d\n", channels[ADC_N-1]);
-        _delay_ms(250);
-    }
-}
 
-void init(void)
-{
-    uart_init();
-    adc_init();
-    sei();
-}
+
+#define ADC_N 8
+#define ADC_FREQUENCY_MAX 200000
+#define ADC_FREQUENCY_MIN 50000
+#define ADC_TOP 0x3FF
+
+
+
+void ADC_init(void);
+
+uint16_t ADC_get(size_t index);
+double ADC_getScaled(size_t index);
+void ADC_getAll(uint16_t* channel);
+void ADC_getAllScaled(double* channel);
+
+
+
+#endif /* ADC_H_ */

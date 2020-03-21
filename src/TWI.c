@@ -1,5 +1,5 @@
 /*
- * twi.c
+ * TWI.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -32,7 +32,7 @@
 
 #include <avr/io.h>
 #include <util/twi.h>
-#include "twi.h"
+#include "TWI.h"
 
 
 
@@ -70,7 +70,7 @@
 
 
 
-void twi_init(void)
+void TWI_init(void)
 {
     TWBR = TWBR_VALUE;
     TWSR = (TWPS1_VALUE << TWPS1) | (TWPS0_VALUE << TWPS0);
@@ -80,7 +80,7 @@ void twi_init(void)
 
 
 
-static void twi_waitForComplete(void)
+static void TWI_waitForComplete(void)
 {
     while(~TWCR & (1 << TWINT))
         ;
@@ -88,180 +88,180 @@ static void twi_waitForComplete(void)
 
 
 
-bool twi_start(void)
+bool TWI_start(void)
 {
     TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN);
     
-    twi_waitForComplete();
+    TWI_waitForComplete();
     
     return TW_STATUS != TW_START;
 }
 
-bool twi_repStart(void)
+bool TWI_repStart(void)
 {
     TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN);
     
-    twi_waitForComplete();
+    TWI_waitForComplete();
     
     return TW_STATUS != TW_REP_START;
 }
 
-void twi_stop(void)
+void TWI_stop(void)
 {
     TWCR = (1 << TWINT) | (1 << TWSTO) | (1 << TWEN);
 }
 
 
-bool twi_addressWrite(uint8_t address)
+bool TWI_addressWrite(uint8_t address)
 {
     TWDR = TWI_ADDRESS_W(address);
     TWCR = (1 << TWINT) | (1 << TWEN);
     
-    twi_waitForComplete();
+    TWI_waitForComplete();
     
     return TW_STATUS != TW_MT_SLA_ACK;
 }
 
-bool twi_addressRead(uint8_t address)
+bool TWI_addressRead(uint8_t address)
 {
     TWDR = TWI_ADDRESS_R(address);
     TWCR = (1 << TWINT) | (1 << TWEN);
     
-    twi_waitForComplete();
+    TWI_waitForComplete();
     
     return TW_STATUS != TW_MR_SLA_ACK;
 }
 
 
-bool twi_write(uint8_t data)
+bool TWI_write(uint8_t data)
 {
     TWDR = data;
     TWCR = (1 << TWINT) | (1 << TWEN);
     
-    twi_waitForComplete();
+    TWI_waitForComplete();
     
     return TW_STATUS != TW_MT_DATA_ACK;
 }
 
-bool twi_writeBurst(uint8_t* data, size_t len)
+bool TWI_writeBurst(uint8_t* data, size_t len)
 {
     while(len--)
-        if(twi_write(*data++))
+        if(TWI_write(*data++))
             return 1;
     
     return 0;
 }
 
 
-bool twi_readAck(uint8_t* data)
+bool TWI_readAck(uint8_t* data)
 {
     TWCR = (1 << TWINT) | (1 << TWEA) | (1 << TWEN);
-    twi_waitForComplete();
+    TWI_waitForComplete();
     
     *data = TWDR;
     
     return TW_STATUS != TW_MR_DATA_ACK;
 }
 
-bool twi_readAckBurst(uint8_t* data, size_t len)
+bool TWI_readAckBurst(uint8_t* data, size_t len)
 {
     while(len--)
-        if(twi_readAck(data++))
+        if(TWI_readAck(data++))
             return 1;
     
     return 0;
 }
 
-bool twi_readNoAck(uint8_t* data)
+bool TWI_readNoAck(uint8_t* data)
 {
     TWCR = (1 << TWINT) | (1 << TWEN);
-    twi_waitForComplete();
+    TWI_waitForComplete();
     
     *data = TWDR;
     
     return TW_STATUS != TW_MR_DATA_NACK;
 }
 
-bool twi_readNoAckBurst(uint8_t* data, size_t len)
+bool TWI_readNoAckBurst(uint8_t* data, size_t len)
 {
     while(len--)
-        if(twi_readNoAck(data++))
+        if(TWI_readNoAck(data++))
             return 1;
     
     return 0;
 }
 
 
-bool twi_writeToSlave(uint8_t address, uint8_t* data, size_t len)
+bool TWI_writeToSlave(uint8_t address, uint8_t* data, size_t len)
 {
-    if(twi_start())
+    if(TWI_start())
         return 1;
-    if(twi_addressWrite(address))
-        return 1;
-    
-    if(twi_writeBurst(data, len))
+    if(TWI_addressWrite(address))
         return 1;
     
-    twi_stop();
+    if(TWI_writeBurst(data, len))
+        return 1;
+    
+    TWI_stop();
     
     return 0;
 }
 
-bool twi_readFromSlave(uint8_t address, uint8_t* data, size_t len)
+bool TWI_readFromSlave(uint8_t address, uint8_t* data, size_t len)
 {
-    if(twi_start())
+    if(TWI_start())
         return 1;
-    if(twi_addressRead(address))
-        return 1;
-    
-    if(twi_readAckBurst(data, len-1))
-        return 1;
-    if(twi_readNoAck(&data[len-1]))
+    if(TWI_addressRead(address))
         return 1;
     
-    twi_stop();
+    if(TWI_readAckBurst(data, len-1))
+        return 1;
+    if(TWI_readNoAck(&data[len-1]))
+        return 1;
+    
+    TWI_stop();
     
     return 0;
 }
 
-bool twi_writeToSlaveRegister(uint8_t address, uint8_t reg,
+bool TWI_writeToSlaveRegister(uint8_t address, uint8_t reg,
     uint8_t* data, size_t len)
 {
-    if(twi_start())
+    if(TWI_start())
         return 1;
-    if(twi_addressWrite(address))
-        return 1;
-    
-    if(twi_write(reg))
-        return 1;
-    if(twi_writeBurst(data, len))
+    if(TWI_addressWrite(address))
         return 1;
     
-    twi_stop();
+    if(TWI_write(reg))
+        return 1;
+    if(TWI_writeBurst(data, len))
+        return 1;
+    
+    TWI_stop();
     
     return 0;
 }
 
-bool twi_readFromSlaveRegister(uint8_t address, uint8_t reg,
+bool TWI_readFromSlaveRegister(uint8_t address, uint8_t reg,
     uint8_t* data, size_t len)
 {
-    if(twi_start())
+    if(TWI_start())
         return 1;
-    if(twi_addressWrite(address))
+    if(TWI_addressWrite(address))
         return 1;
-    if(twi_write(reg))
+    if(TWI_write(reg))
         return 1;
      
-    if(twi_repStart())
+    if(TWI_repStart())
         return 1;
-    if(twi_addressRead(address))
+    if(TWI_addressRead(address))
         return 1;
-    if(twi_readAckBurst(data, len-1))
+    if(TWI_readAckBurst(data, len-1))
         return 1;
-    if(twi_readNoAck(&data[len-1]))
+    if(TWI_readNoAck(&data[len-1]))
         return 1;
     
-    twi_stop();
+    TWI_stop();
     
     return 0;
 }

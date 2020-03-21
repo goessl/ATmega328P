@@ -1,13 +1,13 @@
 /*
- * spi2.h
+ * TWI.h
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian GÃ¶ssl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2019 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian GÃ¶ssl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,44 +30,47 @@
 
 
 
-#ifndef SPI2_H_
-#define SPI2_H_
+#ifndef TWI_H_
+#define TWI_H_
+
+
+
+#ifndef TWI_FREQUENCY
+    #define TWI_FREQUENCY 400000
+#endif
 
 
 
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
+#include <stddef.h>
 
 
 
-//Max frequency
-#ifndef SPI_FREQUENCY
-    #define SPI_FREQUENCY 1000000
-#endif
+void TWI_init(void);
 
-#ifndef SPI_MIN_FREQUENCY
-    #define SPI_MIN_FREQUENCY 0
-#endif
+bool TWI_start(void);
+bool TWI_repStart(void);
+void TWI_stop(void);
 
-#ifndef SPI_MODE
-    #define SPI_MODE 0
-#endif
+bool TWI_addressWrite(uint8_t address);
+bool TWI_addressRead(uint8_t address);
 
-#ifndef SPI_DORD
-    #define SPI_DORD 0
-#endif
+bool TWI_write(uint8_t data);
+bool TWI_writeBurst(uint8_t* data, size_t len);
 
+bool TWI_readAck(uint8_t* data);
+bool TWI_readAckBurst(uint8_t* data, size_t len);
+bool TWI_readNoAck(uint8_t* data);
+bool TWI_readNoAckBurst(uint8_t* data, size_t len);
 
-
-void spi2_init(void);
-
-bool spi2_isBusy(void);
-void spi2_flush(void);
-
-void spi2_transmitBurst(uint8_t* out, uint8_t* in, size_t len,
-    uint8_t* port, uint8_t pin);
+bool TWI_writeToSlave(uint8_t address, uint8_t* data, size_t len);
+bool TWI_readFromSlave(uint8_t address, uint8_t* data, size_t len);
+bool TWI_writeToSlaveRegister(
+    uint8_t address, uint8_t reg, uint8_t* data, size_t len);
+bool TWI_readFromSlaveRegister(
+    uint8_t address, uint8_t reg, uint8_t* data, size_t len);
 
 
 
-#endif /* SPI2_H_ */
+#endif /* TWI_H_ */

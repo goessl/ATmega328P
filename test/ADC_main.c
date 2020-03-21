@@ -1,7 +1,8 @@
 /*
- * ring.h
+ * ADC_main.c
  * 
  * Author:      Sebastian Gössl
+ * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
@@ -29,46 +30,38 @@
 
 
 
-#ifndef RING_H_
-#define RING_H_
+#include <avr/interrupt.h>
+#include <util/delay.h>
+#include <stdio.h>
+#include "ADC.h"
+#include "UART.h"
 
 
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+void init(void);
 
-
-
-typedef struct
+int main(void)
 {
-    uint8_t* buf;
-    uint8_t* end;
-    uint8_t* write;
-    uint8_t* read;
-} ring_t;
+    size_t i;
+    uint16_t channels[ADC_N];
+    
+    
+    
+    init();
+    
+    while(1)
+    {
+        ADC_getAll(channels);
+        for(i=0; i<ADC_N-1; i++)
+            printf("%4d, ", channels[i]);
+        printf("%4d\n", channels[ADC_N-1]);
+        _delay_ms(250);
+    }
+}
 
-
-
-#define RING_INIT(buf_, len_) \
-    ((ring_t){.buf = (buf_), .end = (buf_)+(len_), \
-        .write = (buf_), .read = (buf_)})
-
-
-
-ring_t ring_init(uint8_t* buf, size_t len);
-
-bool ring_isEmpty(ring_t ring);
-bool ring_isFull(ring_t ring);
-size_t ring_pushAvailable(ring_t ring);
-size_t ring_popAvailable(ring_t ring);
-
-bool ring_push(ring_t* ring, uint8_t data);
-bool ring_pushOver(ring_t* ring, uint8_t data);
-
-bool ring_pop(ring_t* ring, uint8_t* data);
-bool ring_peek(ring_t* ring, uint8_t* data);
-
-
-
-#endif /* RING_H_ */
+void init(void)
+{
+    UART_init();
+    ADC_init();
+    sei();
+}

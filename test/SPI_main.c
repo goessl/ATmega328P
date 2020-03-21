@@ -1,5 +1,5 @@
 /*
- * adc.h
+ * SPI_main.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,30 +30,32 @@
 
 
 
-#ifndef ADC_H_
-#define ADC_H_
+#include <stdio.h>
+#include "SPI.h"
+#include "UART.h"
 
 
 
-#include <stddef.h>
-#include <stdint.h>
+void init(void);
 
+int main(void)
+{
+    uint16_t byte;
+    
+    
+    
+    init();
+    
+    printf("Sent : Received\n");
+    for(byte=0x00; byte<=0xFF; byte++)
+        printf("0x%02X : 0x%02X\n", (uint8_t)byte, SPI_writeRead(byte));
+    
+    while(1)
+        ;
+}
 
-
-#define ADC_N 8
-#define ADC_FREQUENCY_MAX 200000
-#define ADC_FREQUENCY_MIN 50000
-#define ADC_TOP 0x3FF
-
-
-
-void adc_init(void);
-
-uint16_t adc_get(size_t index);
-double adc_getScaled(size_t index);
-void adc_getAll(uint16_t* channel);
-void adc_getAllScaled(double* channel);
-
-
-
-#endif /* ADC_H_ */
+void init(void)
+{
+    UART_init();
+    SPI_init();
+}

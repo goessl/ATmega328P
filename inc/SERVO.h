@@ -1,5 +1,5 @@
 /*
- * twi2.h
+ * SERVO.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,33 +30,31 @@
 
 
 
-#ifndef TWI2_H_
-#define TWI2_H_
+#ifndef SERVO_H_
+#define SERVO_H_
 
 
 
-#ifndef TWI_FREQUENCY
-    #define TWI_FREQUENCY 400000
+#include <stddef.h>
+#include <stdint.h>
+
+
+
+#ifndef SERVO_TIMER
+    #define SERVO_TIMER 1
 #endif
 
-#define TWI_ADDRESS_W(x)    (((x) << 1) & ~0x01)
-#define TWI_ADDRESS_R(x)    (((x) << 1) | 0x01)
+
+
+void SERVO_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* MASKS, size_t n);
+
+void SERVO_setServo(size_t index, uint8_t value);
+void SERVO_setServoScaled(size_t index, double percent);
+void SERVO_setServos(uint8_t* values);
+void SERVO_setServosScaled(double* percents);
+void SERVO_setAllServos(uint8_t value);
+void SERVO_setAllServosScaled(double percent);
 
 
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
-
-
-
-void twi2_init(void);
-
-bool twi2_busy(void);
-void twi2_flush(void);
-
-void twi2_start(uint8_t address, uint8_t* data, size_t len);
-
-
-
-#endif /* TWI2_H_ */
+#endif /* SERVO_H_ */

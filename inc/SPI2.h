@@ -1,13 +1,13 @@
 /*
- * uart.h
+ * SPI2.h
  * 
- * Author:      Sebastian GÃ¶ssl
+ * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian GÃ¶ssl
+ * Copyright (c) 2019 Sebastian Gössl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,40 +30,44 @@
 
 
 
-#ifndef UART_H_
-#define UART_H_
+#ifndef SPI2_H_
+#define SPI2_H_
 
 
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 
 
 
-#ifndef BAUD
-    #define BAUD 9600
+//Max frequency
+#ifndef SPI_FREQUENCY
+    #define SPI_FREQUENCY 1000000
 #endif
 
-#ifndef UART_BAUD_TOL
-    #define UART_BAUD_TOL 2
+#ifndef SPI_MIN_FREQUENCY
+    #define SPI_MIN_FREQUENCY 0
+#endif
+
+#ifndef SPI_MODE
+    #define SPI_MODE 0
+#endif
+
+#ifndef SPI_DORD
+    #define SPI_DORD 0
 #endif
 
 
 
-extern FILE uart_out;
-extern FILE uart_in;
+void SPI2_init(void);
+
+bool SPI2_isBusy(void);
+void SPI2_flush(void);
+
+void SPI2_transmitBurst(uint8_t* out, uint8_t* in, size_t len,
+    uint8_t* port, uint8_t pin);
 
 
 
-void uart_init(void);
-
-void uart_transmit(uint8_t data);
-void uart_transmitBurst(uint8_t* data, size_t len);
-
-uint8_t uart_receive(void);
-void uart_receiveBurst(uint8_t* data, size_t len);
-
-
-
-#endif /* UART_H_ */
+#endif /* SPI2_H_ */

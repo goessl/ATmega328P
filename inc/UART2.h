@@ -1,5 +1,5 @@
 /*
- * SPI_main.c
+ * UART2.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,32 +30,44 @@
 
 
 
+#ifndef UART2_H_
+#define UART2_H_
+
+
+
+#ifndef BAUD
+    #define BAUD 9600
+#endif
+
+#ifndef UART2_BUF_LEN
+    #define UART2_BUF_LEN 80
+#endif
+
+
+
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
-#include "spi.h"
-#include "uart.h"
 
 
 
-void init(void);
+extern FILE UART2_out;
+extern FILE UART2_in;
 
-int main(void)
-{
-    uint16_t byte;
-    
-    
-    
-    init();
-    
-    printf("Sent : Received\n");
-    for(byte=0x00; byte<=0xFF; byte++)
-        printf("0x%02X : 0x%02X\n", (uint8_t)byte, spi_writeRead(byte));
-    
-    while(1)
-        ;
-}
 
-void init(void)
-{
-    uart_init();
-    spi_init();
-}
+
+void UART2_init(void);
+
+size_t UART2_transmitAvailable(void);
+void UART2_transmitFlush(void);
+bool UART2_transmit(uint8_t data);
+size_t UART2_transmitBurst(uint8_t* data, size_t len);
+
+size_t UART2_receiveAvailable(void);
+bool UART2_receivePeek(uint8_t* data);
+bool UART2_receive(uint8_t* data);
+size_t UART2_receiveBurst(uint8_t* data, size_t len);
+
+
+
+#endif /* UART2_H_ */

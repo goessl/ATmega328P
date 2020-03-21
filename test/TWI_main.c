@@ -1,5 +1,5 @@
 /*
- * uart2_main.c
+ * TWI_main.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,62 +30,40 @@
 
 
 
-#include <avr/interrupt.h>
+#include <avr/io.h>
 #include <stdio.h>
-#include "uart2.h"
-
-
-
-#define MAX_LEN 80
+#include "TWI.h"
+#include "UART.h"
 
 
 
 void init(void);
-char *fqgets(char *s, size_t n, FILE* fp);
 
 int main(void)
 {
-    char s[MAX_LEN];
+    uint8_t address;
     
     
     
     init();
     
+    printf("Scanning ...\n");
+    for(address=1; address<=127; address++)
+    {
+        TWI_start();
+        if(!TWI_addressWrite(address))
+            printf("0x%02X\n", address);
+        TWI_stop();
+    }
+    printf("Done!\n");
+    
     while(1)
     {
-        if(fqgets(s, MAX_LEN, &uart2_in))
-            fputs(s, &uart2_out);
     }
 }
 
 void init(void)
 {
-    uart2_init();
-    sei();
-}
-
-
-
-//Non-blocking gets, returns s when the line is complete
-//https://gist.github.com/sebig3000/17c049f3562fccbbdfaeff090d166d60
-char *fqgets(char *s, size_t n, FILE* fp)
-{
-    int c;
-    static size_t i = 0;
-    
-    
-    while((c = getc(fp)) != EOF)
-    {
-        s[i++] = c;
-        
-        if(c == '\n' || i >= n-1)
-        {
-            s[i] = '\0';
-            i = 0;
-            
-            return s;
-        }
-    }
-    
-    return NULL;
+    UART_init();
+    TWI_init();
 }

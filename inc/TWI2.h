@@ -1,5 +1,5 @@
 /*
- * esc.h
+ * TWI2.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,26 +30,33 @@
 
 
 
-#ifndef ESC_H_
-#define ESC_H_
+#ifndef TWI2_H_
+#define TWI2_H_
 
 
 
-#include <stddef.h>
+#ifndef TWI_FREQUENCY
+    #define TWI_FREQUENCY 400000
+#endif
+
+#define TWI_ADDRESS_W(x)    (((x) << 1) & ~0x01)
+#define TWI_ADDRESS_R(x)    (((x) << 1) | 0x01)
+
+
+
+#include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
 
 
-void esc_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n);
-void esc_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n);
+void TWI2_init(void);
 
-void esc_setMotor(size_t index, uint8_t value);
-void esc_setMotorScaled(size_t index, double percent);
-void esc_setMotors(uint8_t* values);
-void esc_setMotorsScaled(double* percents);
-void esc_setAllMotors(uint8_t value);
-void esc_setAllMotorsScaled(double percent);
+bool TWI2_busy(void);
+void TWI2_flush(void);
+
+void TWI2_start(uint8_t address, uint8_t* data, size_t len);
 
 
 
-#endif /* ESC_H_ */
+#endif /* TWI2_H_ */

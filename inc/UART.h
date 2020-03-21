@@ -1,5 +1,5 @@
 /*
- * twi.h
+ * UART.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,47 +30,40 @@
 
 
 
-#ifndef TWI_H_
-#define TWI_H_
+#ifndef UART_H_
+#define UART_H_
 
 
 
-#ifndef TWI_FREQUENCY
-    #define TWI_FREQUENCY 400000
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+
+
+
+#ifndef BAUD
+    #define BAUD 9600
+#endif
+
+#ifndef UART_BAUD_TOL
+    #define UART_BAUD_TOL 2
 #endif
 
 
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
+extern FILE UART_out;
+extern FILE UART_in;
 
 
 
-void twi_init(void);
+void UART_init(void);
 
-bool twi_start(void);
-bool twi_repStart(void);
-void twi_stop(void);
+void UART_transmit(uint8_t data);
+void UART_transmitBurst(uint8_t* data, size_t len);
 
-bool twi_addressWrite(uint8_t address);
-bool twi_addressRead(uint8_t address);
-
-bool twi_write(uint8_t data);
-bool twi_writeBurst(uint8_t* data, size_t len);
-
-bool twi_readAck(uint8_t* data);
-bool twi_readAckBurst(uint8_t* data, size_t len);
-bool twi_readNoAck(uint8_t* data);
-bool twi_readNoAckBurst(uint8_t* data, size_t len);
-
-bool twi_writeToSlave(uint8_t address, uint8_t* data, size_t len);
-bool twi_readFromSlave(uint8_t address, uint8_t* data, size_t len);
-bool twi_writeToSlaveRegister(
-    uint8_t address, uint8_t reg, uint8_t* data, size_t len);
-bool twi_readFromSlaveRegister(
-    uint8_t address, uint8_t reg, uint8_t* data, size_t len);
+uint8_t UART_receive(void);
+void UART_receiveBurst(uint8_t* data, size_t len);
 
 
 
-#endif /* TWI_H_ */
+#endif /* UART_H_ */

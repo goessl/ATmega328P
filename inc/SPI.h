@@ -1,13 +1,13 @@
 /*
- * esc.c
+ * SPI.h
  * 
- * Author:      Sebastian GÃ¶ssl
+ * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian GÃ¶ssl
+ * Copyright (c) 2018 Sebastian Gössl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,59 +30,42 @@
 
 
 
-#include <util/delay.h>
-#include "servo.h"
-#include "esc.h"
+#ifndef SPI_H_
+#define SPI_H_
 
 
 
-void esc_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
-{
-    servo_init(DDRs, PORTs, masks, n);
-    
-    servo_setAllServos(0x00);
-    _delay_ms(4000);
-}
-
-void esc_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
-{
-    servo_init(DDRs, PORTs, masks, n);
-    
-    servo_setAllServos(0xFF);
-    _delay_ms(4000);
-    
-    servo_setAllServos(0x00);
-    _delay_ms(4000);
-}
+#include <stddef.h>
+#include <stdint.h>
 
 
 
-void esc_setMotor(size_t index, uint8_t value)
-{
-    servo_setServo(index, value);
-}
+//Max frequency
+#ifndef SPI_FREQUENCY
+    #define SPI_FREQUENCY 1000000
+#endif
 
-void esc_setMotorScaled(size_t index, double percent)
-{
-    servo_setServoScaled(index, percent);
-}
+#ifndef SPI_MIN_FREQUENCY
+    #define SPI_MIN_FREQUENCY 0
+#endif
 
-void esc_setMotors(uint8_t* values)
-{
-    servo_setServos(values);
-}
+#ifndef SPI_MODE
+    #define SPI_MODE 0
+#endif
 
-void esc_setMotorsScaled(double* percents)
-{
-    servo_setServosScaled(percents);
-}
+#ifndef SPI_DORD
+    #define SPI_DORD 0
+#endif
 
-void esc_setAllMotors(uint8_t value)
-{
-    servo_setAllServos(value);
-}
 
-void esc_setAllMotorsScaled(double percent)
-{
-    servo_setAllServosScaled(percent);
-}
+
+void SPI_init(void);
+
+uint8_t SPI_writeRead(uint8_t data);
+void SPI_writeBurst(uint8_t* out, size_t len);
+void SPI_readBurst(uint8_t* in, size_t len);
+void SPI_writeReadBurst(uint8_t* out, uint8_t* in, size_t len);
+
+
+
+#endif /* SPI_H_ */

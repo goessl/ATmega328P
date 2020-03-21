@@ -1,5 +1,5 @@
 /*
- * twi2.c
+ * TWI2.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -33,7 +33,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/twi.h>
-#include "twi2.h"
+#include "TWI2.h"
 
 
 
@@ -67,14 +67,14 @@
 
 
 
-static uint8_t twi2_address;
-static uint8_t* twi2_data;
-static size_t twi2_index;
-static size_t twi2_len;
+static uint8_t TWI2_address;
+static uint8_t* TWI2_data;
+static size_t TWI2_index;
+static size_t TWI2_len;
 
 
 
-void twi2_init(void)
+void TWI2_init(void)
 {
     TWBR = TWBR_VALUE;
     TWSR = (TWPS1_VALUE << TWPS1) | (TWPS0_VALUE << TWPS0);
@@ -84,12 +84,12 @@ void twi2_init(void)
 
 
 
-bool twi2_busy(void)
+bool TWI2_busy(void)
 {
     return TWCR & (1<<TWIE);
 }
 
-void twi2_flush(void)
+void TWI2_flush(void)
 {
     while(TWCR & (1<<TWIE))
         ;
@@ -97,13 +97,13 @@ void twi2_flush(void)
 
 
 
-void twi2_start(uint8_t address, uint8_t* data, size_t len)
+void TWI2_start(uint8_t address, uint8_t* data, size_t len)
 {
-    twi2_flush();
+    TWI2_flush();
     
-    twi2_address = address;
-    twi2_data = data;
-    twi2_len = len;
+    TWI2_address = address;
+    TWI2_data = data;
+    TWI2_len = len;
     
     TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN) | (1 << TWIE);
 }
@@ -116,17 +116,17 @@ ISR(TWI_vect)
     {
         case TW_START:
         case TW_REP_START:
-            twi2_index = 0;
-            TWDR = twi2_address;
+            TWI2_index = 0;
+            TWDR = TWI2_address;
             TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWIE);
             break;
         
         
         case TW_MT_SLA_ACK:
         case TW_MT_DATA_ACK:
-            if(twi2_index < twi2_len)
+            if(TWI2_index < TWI2_len)
             {
-                TWDR = twi2_data[twi2_index++];
+                TWDR = TWI2_data[TWI2_index++];
                 TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWIE);
             }
             else
@@ -137,9 +137,9 @@ ISR(TWI_vect)
         
         
         case TW_MR_DATA_ACK:
-            twi2_data[twi2_index++] = TWDR;
+            TWI2_data[TWI2_index++] = TWDR;
         case TW_MR_SLA_ACK:
-            if(twi2_index < twi2_len-1)
+            if(TWI2_index < TWI2_len-1)
             {
                 TWCR = (1 << TWINT) | (1 << TWEA) | (1 << TWEN) | (1 << TWIE);
             }
@@ -150,7 +150,7 @@ ISR(TWI_vect)
             break;
         
         case TW_MR_DATA_NACK:
-            twi2_data[twi2_index++] = TWDR;
+            TWI2_data[TWI2_index++] = TWDR;
             TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);
             break;
         

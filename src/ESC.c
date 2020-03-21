@@ -1,5 +1,5 @@
 /*
- * uart2.h
+ * ESC.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,45 +30,59 @@
 
 
 
-#ifndef UART2_H_
-#define UART2_H_
+#include <util/delay.h>
+#include "SERVO.h"
+#include "ESC.h"
 
 
 
-#ifndef BAUD
-    #define BAUD 9600
-#endif
+void ESC_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
+{
+    SERVO_init(DDRs, PORTs, masks, n);
+    
+    SERVO_setAllServos(0x00);
+    _delay_ms(4000);
+}
 
-#ifndef UART2_BUF_LEN
-    #define UART2_BUF_LEN 80
-#endif
-
-
-
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-
-
-
-extern FILE uart2_out;
-extern FILE uart2_in;
-
-
-
-void uart2_init(void);
-
-size_t uart2_transmitAvailable(void);
-void uart2_transmitFlush(void);
-bool uart2_transmit(uint8_t data);
-size_t uart2_transmitBurst(uint8_t* data, size_t len);
-
-size_t uart2_receiveAvailable(void);
-bool uart2_receivePeek(uint8_t* data);
-bool uart2_receive(uint8_t* data);
-size_t uart2_receiveBurst(uint8_t* data, size_t len);
+void ESC_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
+{
+    SERVO_init(DDRs, PORTs, masks, n);
+    
+    SERVO_setAllServos(0xFF);
+    _delay_ms(4000);
+    
+    SERVO_setAllServos(0x00);
+    _delay_ms(4000);
+}
 
 
 
-#endif /* UART2_H_ */
+void ESC_setMotor(size_t index, uint8_t value)
+{
+    SERVO_setServo(index, value);
+}
+
+void ESC_setMotorScaled(size_t index, double percent)
+{
+    SERVO_setServoScaled(index, percent);
+}
+
+void ESC_setMotors(uint8_t* values)
+{
+    SERVO_setServos(values);
+}
+
+void ESC_setMotorsScaled(double* percents)
+{
+    SERVO_setServosScaled(percents);
+}
+
+void ESC_setAllMotors(uint8_t value)
+{
+    SERVO_setAllServos(value);
+}
+
+void ESC_setAllMotorsScaled(double percent)
+{
+    SERVO_setAllServosScaled(percent);
+}

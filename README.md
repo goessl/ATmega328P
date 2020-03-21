@@ -2,18 +2,18 @@
 
 Driver library for basic functionalities of the ATmega328P (Arduino UNO)
 microcontroller.
- * uart - UART (blocking)
- * uart2 - UART (interrupt based) (uses ring.h)
- * spi - SPI Master
- * spi2 - SPI Master (interrupt based)
- * twi - I2C Master
- * twi2 - I2C Master (interrupt based)
- * adc - Analog to digital converter (interrupt based)
- * servo - Servo driver (interrupt based)
- * esc - ESC driver (uses Servo.h)
- * pid2 - PID controller driver with variable frequency (accessible iterate
+ * UART - UART (blocking)
+ * UART2 - UART (interrupt based) (uses RING.h)
+ * SPI - SPI Master
+ * SPI2 - SPI Master (interrupt based)
+ * TWI - I2C Master
+ * TWI2 - I2C Master (interrupt based)
+ * ADC - Analog to digital converter (interrupt based)
+ * SERVO - Servo driver (interrupt based)
+ * ESC - ESC driver (uses SERVO.h)
+ * PID2 - PID controller driver with variable frequency (accessible iterate
  function) (interrupt based)
- * ring - Ring buffer implementation
+ * RING - Ring buffer implementation
 
 ## Getting Started
 
@@ -77,7 +77,6 @@ example. The hex files can be uploaded to an Arduino UNO with e.g.
  - [ ] Add useful documentation
  - [ ] Only include what's needed
  - [ ] Timer macros
- - [x] Better design pattern: lower case module names
  - [x] Split NRF24L01 to own repo
  - [x] Improve makefile
  - [x] UART redirect standard streams on default

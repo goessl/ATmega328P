@@ -1,5 +1,5 @@
 /*
- * servo.c
+ * SERVO.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -34,7 +34,7 @@
 #include <avr/interrupt.h>
 #include <util/atomic.h>
 #include <math.h>
-#include "servo.h"
+#include "SERVO.h"
 
 
 
@@ -212,19 +212,19 @@
 
 
 
-static volatile uint8_t** servo_PORTs;
-static volatile uint8_t* servo_masks;
-static volatile size_t servo_n;
-static volatile size_t servo_current = 0;
-static volatile SERVO_OCRxA_TYPE servo_values[SERVO_MAX_N];
+static volatile uint8_t** SERVO_PORTs;
+static volatile uint8_t* SERVO_masks;
+static volatile size_t SERVO_n;
+static volatile size_t SERVO_current = 0;
+static volatile SERVO_OCRxA_TYPE SERVO_values[SERVO_MAX_N];
 
 
 
-void servo_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
+void SERVO_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
 {
-    servo_PORTs = (volatile uint8_t**)PORTs;
-    servo_masks = (volatile uint8_t*)masks;
-    servo_n = (volatile size_t)n;
+    SERVO_PORTs = (volatile uint8_t**)PORTs;
+    SERVO_masks = (volatile uint8_t*)masks;
+    SERVO_n = (volatile size_t)n;
     
     
     
@@ -233,8 +233,8 @@ void servo_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
     
     
     
-    servo_setAllServos(0);
-    SERVO_OCRxA = servo_values[servo_current];
+    SERVO_setAllServos(0);
+    SERVO_OCRxA = SERVO_values[SERVO_current];
     #if SERVO_TIMER == 0
         TCCR0A |= (1 << WGM01);
         TCCR0B |= (CS02_VALUE << CS02) | (CS01_VALUE << CS01)
@@ -254,17 +254,17 @@ void servo_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
 
 
 
-void servo_setServo(size_t index, uint8_t value)
+void SERVO_setServo(size_t index, uint8_t value)
 {
     SERVO_OCRxA_TYPE ocrxa = SERVO_UINT8T_TO_OCRxA(value);
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        servo_values[index] = ocrxa;
+        SERVO_values[index] = ocrxa;
     }
 }
 
-void servo_setServoScaled(size_t index, double percent)
+void SERVO_setServoScaled(size_t index, double percent)
 {
     SERVO_OCRxA_TYPE ocrxa;
     
@@ -277,57 +277,57 @@ void servo_setServoScaled(size_t index, double percent)
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        servo_values[index] = ocrxa;
+        SERVO_values[index] = ocrxa;
     }
 }
 
-void servo_setServos(uint8_t* values)
+void SERVO_setServos(uint8_t* values)
 {
     size_t i;
     
-    for(i=0; i<servo_n; i++)
-        servo_setServo(i, values[i]);
+    for(i=0; i<SERVO_n; i++)
+        SERVO_setServo(i, values[i]);
 }
 
-void servo_setServosScaled(double* percents)
+void SERVO_setServosScaled(double* percents)
 {
     size_t i;
     
-    for(i=0; i<servo_n; i++)
-        servo_setServoScaled(i, percents[i]);
+    for(i=0; i<SERVO_n; i++)
+        SERVO_setServoScaled(i, percents[i]);
 }
 
-void servo_setAllServos(uint8_t value)
+void SERVO_setAllServos(uint8_t value)
 {
     size_t i;
     
-    for(i=0; i<servo_n; i++)
-        servo_setServo(i, value);
+    for(i=0; i<SERVO_n; i++)
+        SERVO_setServo(i, value);
 }
 
-void servo_setAllServosScaled(double percent)
+void SERVO_setAllServosScaled(double percent)
 {
     size_t i;
     
-    for(i=0; i<servo_n; i++)
-        servo_setServoScaled(i, percent);
+    for(i=0; i<SERVO_n; i++)
+        SERVO_setServoScaled(i, percent);
 }
 
 
 
 ISR(SERVO_vect)
 {
-    if(~*servo_PORTs[servo_current] & servo_masks[servo_current])
+    if(~*SERVO_PORTs[SERVO_current] & SERVO_masks[SERVO_current])
     {
-        *servo_PORTs[servo_current] |= servo_masks[servo_current];
-        SERVO_OCRxA = servo_values[servo_current];
+        *SERVO_PORTs[SERVO_current] |= SERVO_masks[SERVO_current];
+        SERVO_OCRxA = SERVO_values[SERVO_current];
     }
     else
     {
-        *servo_PORTs[servo_current] &= ~servo_masks[servo_current];
-        SERVO_OCRxA = SERVO_BASE_OCRxA/servo_n - SERVO_OCRxA;
+        *SERVO_PORTs[SERVO_current] &= ~SERVO_masks[SERVO_current];
+        SERVO_OCRxA = SERVO_BASE_OCRxA/SERVO_n - SERVO_OCRxA;
         
-        if(++servo_current >= servo_n)
-            servo_current = 0;
+        if(++SERVO_current >= SERVO_n)
+            SERVO_current = 0;
     }
 }

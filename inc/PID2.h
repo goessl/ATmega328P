@@ -1,5 +1,5 @@
 /*
- * uart_main.c
+ * PID2.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -7,7 +7,7 @@
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2019 Sebastian Gössl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,34 +30,52 @@
 
 
 
-
-#include <stdio.h>
-#include "uart.h"
-
-
-
-#define MAX_LENGTH 80
+#ifndef PID2_H_
+#define PID2_H_
 
 
 
-void init(void);
+#include <stddef.h>
+#include <stdint.h>
 
-int main(void)
+
+
+#ifndef PID2_TIMER
+    #define PID2_TIMER 2
+#endif
+
+
+
+typedef struct
 {
-    char s[MAX_LENGTH];
+    double* w;
+    double* y;
+    double* x;
     
+    double kp, ki, kd;
     
-    
-    init();
-    
-    while(1)
-    {
-        fgets(s, MAX_LENGTH, &uart_in);
-        fputs(s, &uart_out);
-    }
-}
+    double sum, last;
+    double iMax, dMax, outMax;
+} PID_t;
 
-void init(void)
-{
-    uart_init();
-}
+
+
+#define PID2_INIT_CONTROLLER(w_, y_, x_, kp_, ki_, kd_, iMax_, dMax_, outMax_) \
+    ((PID_t){.w = (w_), .y = (y_), .x = (x_), \
+        .kp = (kp_), .ki = (ki_), .kd = (kd_), \
+        .sum = 0, .last = 0, \
+        .iMax = (iMax_), .dMax = (dMax_), .outMax = (outMax_)})
+
+
+
+void PID2_init(PID_t* controllers, size_t n);
+
+PID_t PID2_initController(double* w, double* y, double* x,
+    double kp, double ki, double kd,
+    double iMax, double dMax, double outMax);
+
+uint32_t PID2_iterate(void);
+
+
+
+#endif /* PID_H_ */

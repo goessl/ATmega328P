@@ -1,5 +1,5 @@
 /*
- * servo_main.c
+ * ESC.h
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -30,58 +30,26 @@
 
 
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <util/delay.h>
-#include "servo.h"
+#ifndef ESC_H_
+#define ESC_H_
 
 
 
-void init(void);
+#include <stddef.h>
+#include <stdint.h>
 
 
 
-#define SERVO_N 4
+void ESC_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n);
+void ESC_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n);
 
-uint8_t* DDRs[SERVO_N] = {
-    (uint8_t*)&DDRB,
-    (uint8_t*)&DDRB,
-    (uint8_t*)&DDRB,
-    (uint8_t*)&DDRB};
-uint8_t* PORTS[SERVO_N] = {
-    (uint8_t*)&PORTB,
-    (uint8_t*)&PORTB,
-    (uint8_t*)&PORTB,
-    (uint8_t*)&PORTB};
-uint8_t masks[SERVO_N] = {
-    (uint8_t)(1 << PORTB5),
-    (uint8_t)(1 << PORTB4),
-    (uint8_t)(1 << PORTB3),
-    (uint8_t)(1 << PORTB2)};
+void ESC_setMotor(size_t index, uint8_t value);
+void ESC_setMotorScaled(size_t index, double percent);
+void ESC_setMotors(uint8_t* values);
+void ESC_setMotorsScaled(double* percents);
+void ESC_setAllMotors(uint8_t value);
+void ESC_setAllMotorsScaled(double percent);
 
 
 
-int main(void)
-{
-    size_t i;
-    uint8_t servos[SERVO_N] = {0x00, 0xFF/4, 0xFF/2, 0xFF/4*3};
-    
-    
-    
-    init();
-    
-    while(1)
-    {
-        servo_setServos(servos);
-        for(i=0; i<SERVO_N; i++)
-            servos[i]++;
-        
-        _delay_ms(50);
-    }
-}
-
-void init(void)
-{
-    servo_init(DDRs, PORTS, masks, SERVO_N);
-    sei();
-}
+#endif /* ESC_H_ */

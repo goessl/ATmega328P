@@ -1,5 +1,5 @@
 /*
- * spi.c
+ * SPI.c
  * 
  * Author:      Sebastian Gössl
  * Hardware:    ATmega328P
@@ -31,7 +31,7 @@
 
 
 #include <avr/io.h>
-#include "spi.h"
+#include "SPI.h"
 
 
 
@@ -106,7 +106,7 @@
 
 
 
-void spi_init(void)
+void SPI_init(void)
 {
     DDRB |= (1 << DDB2) | (1 << DDB3) | (1 << DDB5);
     //DDRB &= ~(1 << DDB4);
@@ -120,7 +120,7 @@ void spi_init(void)
 
 
 
-uint8_t spi_writeRead(uint8_t data)
+uint8_t SPI_writeRead(uint8_t data)
 {
     SPDR = data;
     while(~SPSR & (1 << SPIF))
@@ -129,20 +129,20 @@ uint8_t spi_writeRead(uint8_t data)
     return SPDR;
 }
 
-void spi_writeBurst(uint8_t* out, size_t len)
+void SPI_writeBurst(uint8_t* out, size_t len)
 {
     while(len--)
-        spi_writeRead(*out++);
+        SPI_writeRead(*out++);
 }
 
-void spi_readBurst(uint8_t* in, size_t len)
+void SPI_readBurst(uint8_t* in, size_t len)
 {
     while(len--)
-        *in++ = spi_writeRead(0x00);
+        *in++ = SPI_writeRead(0x00);
 }
 
-void spi_writeReadBurst(uint8_t* out, uint8_t* in, size_t len)
+void SPI_writeReadBurst(uint8_t* out, uint8_t* in, size_t len)
 {
     while(len--)
-        *in++ = spi_writeRead(*out++);
+        *in++ = SPI_writeRead(*out++);
 }
