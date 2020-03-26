@@ -58,6 +58,8 @@ extern FILE UART2_in;
 
 void UART2_init(void);
 
+char* UART2_ngets(char* s, size_t len);
+
 size_t UART2_transmitAvailable(void);
 void UART2_transmitFlush(void);
 bool UART2_transmit(uint8_t data);

@@ -104,6 +104,32 @@ void UART2_init(void)
 
 
 
+//Non-blocking gets, returns s when the line is complete
+//https://gist.github.com/sebig3000/17c049f3562fccbbdfaeff090d166d60
+char* UART2_ngets(char* s, size_t n)
+{
+    uint8_t c;
+    static size_t i = 0;
+    
+    
+    while(!UART2_receive(&c))
+    {
+        s[i++] = c;
+        
+        if(c == '\n' || i >= n-1)
+        {
+            s[i] = '\0';
+            i = 0;
+            
+            return s;
+        }
+    }
+    
+    return NULL;
+}
+
+
+
 size_t UART2_transmitAvailable(void)
 {
     size_t ret;

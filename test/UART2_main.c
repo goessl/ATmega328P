@@ -41,7 +41,6 @@
 
 
 void init(void);
-char *fqgets(char *s, size_t n, FILE* fp);
 
 int main(void)
 {
@@ -53,8 +52,10 @@ int main(void)
     
     while(1)
     {
-        if(fqgets(s, MAX_LEN, &UART2_in))
-            fputs(s, &UART2_out);
+        //Non-blocking gets, returns s when the line is complete
+        //https://gist.github.com/sebig3000/17c049f3562fccbbdfaeff090d166d60
+        if(UART2_ngets(s, MAX_LEN))
+            fputs(s, stdout);
     }
 }
 
@@ -62,30 +63,4 @@ void init(void)
 {
     UART2_init();
     sei();
-}
-
-
-
-//Non-blocking gets, returns s when the line is complete
-//https://gist.github.com/sebig3000/17c049f3562fccbbdfaeff090d166d60
-char *fqgets(char *s, size_t n, FILE* fp)
-{
-    int c;
-    static size_t i = 0;
-    
-    
-    while((c = getc(fp)) != EOF)
-    {
-        s[i++] = c;
-        
-        if(c == '\n' || i >= n-1)
-        {
-            s[i] = '\0';
-            i = 0;
-            
-            return s;
-        }
-    }
-    
-    return NULL;
 }
