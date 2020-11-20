@@ -143,17 +143,22 @@ bool TWI_write(uint8_t data)
     return TW_STATUS != TW_MT_DATA_ACK;
 }
 
-bool TWI_writeBurst(uint8_t* data, size_t len)
+size_t TWI_writeBurst(uint8_t *data, size_t len)
 {
-    while(len--)
-        if(TWI_write(*data++))
-            return 1;
+    size_t i = len;
     
-    return 0;
+    while(i)
+    {
+        if(TWI_write(*data++))
+            break;
+        i--;
+    }
+    
+    return len - i;
 }
 
 
-bool TWI_readAck(uint8_t* data)
+bool TWI_readAck(uint8_t *data)
 {
     TWCR = (1 << TWINT) | (1 << TWEA) | (1 << TWEN);
     TWI_waitForComplete();
@@ -163,16 +168,21 @@ bool TWI_readAck(uint8_t* data)
     return TW_STATUS != TW_MR_DATA_ACK;
 }
 
-bool TWI_readAckBurst(uint8_t* data, size_t len)
+size_t TWI_readAckBurst(uint8_t *data, size_t len)
 {
-    while(len--)
-        if(TWI_readAck(data++))
-            return 1;
+    size_t i = len;
     
-    return 0;
+    while(i)
+    {
+        if(TWI_readAck(data++))
+            break;
+        i--;
+    }
+    
+    return len - i;
 }
 
-bool TWI_readNoAck(uint8_t* data)
+bool TWI_readNoAck(uint8_t *data)
 {
     TWCR = (1 << TWINT) | (1 << TWEN);
     TWI_waitForComplete();
@@ -182,42 +192,62 @@ bool TWI_readNoAck(uint8_t* data)
     return TW_STATUS != TW_MR_DATA_NACK;
 }
 
-bool TWI_readNoAckBurst(uint8_t* data, size_t len)
+size_t TWI_readNoAckBurst(uint8_t *data, size_t len)
 {
-    while(len--)
-        if(TWI_readNoAck(data++))
-            return 1;
+    size_t i = len;
     
-    return 0;
+    while(i)
+    {
+        if(TWI_readNoAck(data++))
+            break;
+        i--;
+    }
+    
+    return len - i;
 }
 
 
-bool TWI_writeToSlave(uint8_t address, uint8_t* data, size_t len)
+bool TWI_writeToSlave(uint8_t address, uint8_t *data, size_t len)
 {
     if(TWI_start())
         return 1;
     if(TWI_addressWrite(address))
+    {
+        TWI_stop();
         return 1;
+    }
     
-    if(TWI_writeBurst(data, len))
+    if(TWI_writeBurst(data, len) != len)
+    {
+        TWI_stop();
         return 1;
+    }
     
     TWI_stop();
     
     return 0;
 }
 
-bool TWI_readFromSlave(uint8_t address, uint8_t* data, size_t len)
+bool TWI_readFromSlave(uint8_t address, uint8_t *data, size_t len)
 {
     if(TWI_start())
         return 1;
     if(TWI_addressRead(address))
+    {
+        TWI_stop();
         return 1;
+    }
     
-    if(TWI_readAckBurst(data, len-1))
+    if(len>1 && TWI_readAckBurst(data, len-1)!=len-1)
+    {
+        TWI_stop();
         return 1;
-    if(TWI_readNoAck(&data[len-1]))
+    }
+    if(len>0 && TWI_readNoAck(&data[len-1]))
+    {
+        TWI_stop();
         return 1;
+    }
     
     TWI_stop();
     
@@ -225,17 +255,26 @@ bool TWI_readFromSlave(uint8_t address, uint8_t* data, size_t len)
 }
 
 bool TWI_writeToSlaveRegister(uint8_t address, uint8_t reg,
-    uint8_t* data, size_t len)
+    uint8_t *data, size_t len)
 {
     if(TWI_start())
         return 1;
     if(TWI_addressWrite(address))
+    {
+        TWI_stop();
         return 1;
+    }
     
     if(TWI_write(reg))
+    {
+        TWI_stop();
         return 1;
-    if(TWI_writeBurst(data, len))
+    }
+    if(TWI_writeBurst(data, len) != len)
+    {
+        TWI_stop();
         return 1;
+    }
     
     TWI_stop();
     
@@ -243,23 +282,40 @@ bool TWI_writeToSlaveRegister(uint8_t address, uint8_t reg,
 }
 
 bool TWI_readFromSlaveRegister(uint8_t address, uint8_t reg,
-    uint8_t* data, size_t len)
+    uint8_t *data, size_t len)
 {
     if(TWI_start())
         return 1;
     if(TWI_addressWrite(address))
+    {
+        TWI_stop();
         return 1;
+    }
     if(TWI_write(reg))
+    {
+        TWI_stop();
         return 1;
-     
+    }
+    
+    
     if(TWI_repStart())
         return 1;
     if(TWI_addressRead(address))
+    {
+        TWI_stop();
         return 1;
-    if(TWI_readAckBurst(data, len-1))
+    }
+    
+    if(len>1 && TWI_readAckBurst(data, len-1)!=len-1)
+    {
+        TWI_stop();
         return 1;
-    if(TWI_readNoAck(&data[len-1]))
+    }
+    if(len>0 && TWI_readNoAck(&data[len-1]))
+    {
+        TWI_stop();
         return 1;
+    }
     
     TWI_stop();
     

@@ -36,40 +36,93 @@
 
 
 #ifndef TWI_FREQUENCY
+    //Default to Fast Mode
     #define TWI_FREQUENCY 400000
 #endif
 
 
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
+#include <stdbool.h>    //bool
+#include <stdint.h>     //fixed width integers
+#include <stddef.h>     //size_t
 
 
 
+/**
+ * Initializes the TWI hardware for master mode.
+ */
 void TWI_init(void);
 
+/**
+ * Sends a START condition.
+ * Returns 0 on success.
+ */
 bool TWI_start(void);
+/**
+ * Sends a repeated START condition.
+ * Returns 0 on success.
+ */
 bool TWI_repStart(void);
+/**
+ * Sends a STOP condition.
+ */
 void TWI_stop(void);
 
+/**
+ * Sends the slave address with intend to write.
+ * Returns 0 if an acknowledge bit was returned.
+ */
 bool TWI_addressWrite(uint8_t address);
+/**
+ * Sends the slave address with intend to read.
+ * Returns 0 if an acknowledge bit was returned.
+ */
 bool TWI_addressRead(uint8_t address);
 
+/**
+ * Sends a data byte.
+ * Returns 0 if an acknowledge bit was returned.
+ */
 bool TWI_write(uint8_t data);
-bool TWI_writeBurst(uint8_t* data, size_t len);
+/**
+ * Sends data bytes until all bytes have been sent or no acknowledge bit has been returned.
+ * Returns the number of bytes for which an acknowledge bit has been returned (len-1 on success).
+ */
+size_t TWI_writeBurst(uint8_t *data, size_t len);
 
-bool TWI_readAck(uint8_t* data);
-bool TWI_readAckBurst(uint8_t* data, size_t len);
-bool TWI_readNoAck(uint8_t* data);
-bool TWI_readNoAckBurst(uint8_t* data, size_t len);
+/**
+ * Reads a data byte and sends an acknowledge bit.
+ * Returns 0 on success.
+ */
+bool TWI_readAck(uint8_t *data);
+/**
+ * Reads data bytes and returns acknowledge bits until all bytes have been read or a read has failed.
+ * Returns the number of bytes that have been read successfully.
+ */
+size_t TWI_readAckBurst(uint8_t *data, size_t len);
+/**
+ * Reads a data byte and sends no acknowledge bit.
+ * Returns 0 on success.
+ */
+bool TWI_readNoAck(uint8_t *data);
+/**
+ * Reads data bytes and returns no acknowledge bits until all bytes have been read or a read has failed.
+ * Returns the number of bytes that have been read successfully.
+ */
+size_t TWI_readNoAckBurst(uint8_t *data, size_t len);
 
-bool TWI_writeToSlave(uint8_t address, uint8_t* data, size_t len);
-bool TWI_readFromSlave(uint8_t address, uint8_t* data, size_t len);
+/**
+ * Writes the data to the given slave.
+ */
+bool TWI_writeToSlave(uint8_t address, uint8_t *data, size_t len);
+/**
+ * Reads data from the given slave, always returning acknowledge bits except for the last byte.
+ */
+bool TWI_readFromSlave(uint8_t address, uint8_t *data, size_t len);
 bool TWI_writeToSlaveRegister(
-    uint8_t address, uint8_t reg, uint8_t* data, size_t len);
+    uint8_t address, uint8_t reg, uint8_t *data, size_t len);
 bool TWI_readFromSlaveRegister(
-    uint8_t address, uint8_t reg, uint8_t* data, size_t len);
+    uint8_t address, uint8_t reg, uint8_t *data, size_t len);
 
 
 
