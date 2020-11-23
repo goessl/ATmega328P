@@ -1,13 +1,13 @@
 /*
- * SPI_main.c
+ * servo_test.c
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,32 +30,48 @@
 
 
 
-#include <stdio.h>
-#include "SPI.h"
-#include "UART.h"
+#include <avr/interrupt.h>
+#include <util/delay.h>
+#include "servo.h"
 
 
 
 void init(void);
 
+
+
+volatile uint8_t *ddr = &DDRB;
+volatile uint8_t *port = &PORTB;
+volatile uint8_t mask = (1 << PB5);
+
+
+
+
 int main(void)
 {
-    uint16_t byte;
+    uint8_t i;
     
     
     
     init();
     
-    printf("Sent : Received\n");
-    for(byte=0x00; byte<=0xFF; byte++)
-        printf("0x%02X : 0x%02X\n", (uint8_t)byte, SPI_writeRead(byte));
-    
     while(1)
-        ;
+    {
+        for(i=0; i<0xFF; i++)
+        {
+            servo_setServo(0, i);
+            _delay_ms(100);
+        }
+        for(i=0xFF; i>0; i--)
+        {
+            servo_setServo(0, i);
+            _delay_ms(100);
+        }
+    }
 }
 
 void init(void)
 {
-    UART_init();
-    SPI_init();
+    servo_init((uint8_t**)&ddr, (uint8_t**)&port, (uint8_t*)&mask, 1);
+    sei();
 }

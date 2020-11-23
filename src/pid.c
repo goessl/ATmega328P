@@ -1,13 +1,13 @@
 /*
- * PID2.c
+ * pid.c
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2019 Sebastian Gössl
+ * Copyright (c) 2019 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -33,7 +33,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
-#include "PID2.h"
+#include "pid.h"
 
 
 
@@ -42,60 +42,60 @@
     #warning "F_CPU not defined! Assuming 16MHz."
 #endif
 
-#define PID2_CLAMP(v, min, max) \
+#define PID_CLAMP(v, min, max) \
     (((v)<(min)) ? (min) : (((v)>(max)) ? (max) : (v)))
 
 
 
-static volatile uint16_t PID2_overflows = 0;
-static volatile PID_t* PID2_controllers;
-static volatile size_t PID2_n;
+static volatile uint16_t pid_overflows = 0;
+static volatile Pid_t *pid_controllers;
+static volatile size_t pid_n;
 
 
 
-void PID2_init(PID_t* controllers, size_t n)
+void pid_init(Pid_t *controllers, size_t n)
 {
-    PID2_controllers = controllers;
-    PID2_n = n;
+    pid_controllers = controllers;
+    pid_n = n;
     
     
     
-    #if PID2_TIMER == 0
+    #if PID_TIMER == 0
         
         TCCR0B |= (1 << CS00);
         TIMSK0 |= (1 << TOIE0);
-        #define PID2_TIMER_TCNT TCNT0
-        #define PID2_TIMER_TOP 0xFF
-        #define PID2_vect TIMER0_OVF_vect
+        #define PID_TIMER_TCNT TCNT0
+        #define PID_TIMER_TOP 0xFF
+        #define PID_vect TIMER0_OVF_vect
         
-    #elif PID2_TIMER == 1
+    #elif PID_TIMER == 1
         
         TCCR1B |= (1 << CS10);
         TIMSK1 |= (1 << TOIE1);
-        #define PID2_TIMER_TCNT TCNT1
-        #define PID2_TIMER_TOP 0xFFFF
-        #define PID2_vect TIMER1_OVF_vect
+        #define PID_TIMER_TCNT TCNT1
+        #define PID_TIMER_TOP 0xFFFF
+        #define PID_vect TIMER1_OVF_vect
         
-    #elif PID2_TIMER == 2
+    #elif PID_TIMER == 2
         
         TCCR2B |= (1 << CS20);
         TIMSK2 |= (1 << TOIE2);
-        #define PID2_TIMER_TCNT TCNT2
-        #define PID2_TIMER_TOP 0xFF
-        #define PID2_vect TIMER2_OVF_vect
+        #define PID_TIMER_TCNT TCNT2
+        #define PID_TIMER_TOP 0xFF
+        #define PID_vect TIMER2_OVF_vect
     #endif
 }
 
-PID_t PID2_initController(double* w, double* y, double* x,
+Pid_t pid_initController(double *w, double *y, double *x,
     double kp, double ki, double kd,
     double iMax, double dMax, double outMax)
 {
-    return PID2_INIT_CONTROLLER(w, y, x, kp, ki, kd, iMax, dMax, outMax);
+    return PID_INIT_CONTROLLER(w, y, x, kp, ki, kd, iMax, dMax, outMax);
 }
 
 
 
-static void PID2_iterateSingle(PID_t* controller, double dt)
+static void pid_iterateSingle(Pid_t *controller, double dt)
 {
     double derivative, y;
     double e = *controller->w - *controller->x;
@@ -103,22 +103,22 @@ static void PID2_iterateSingle(PID_t* controller, double dt)
     
     
     controller->sum += e * dt;
-    controller->sum = PID2_CLAMP(controller->sum, -controller->iMax, controller->iMax);
+    controller->sum = PID_CLAMP(controller->sum, -controller->iMax, controller->iMax);
     
     derivative = (e - controller->last) / dt;
-    derivative = PID2_CLAMP(derivative, -controller->dMax, controller->dMax);
+    derivative = PID_CLAMP(derivative, -controller->dMax, controller->dMax);
     controller->last = e;
     
     
     y = controller->kp * e
         + controller->ki * controller->sum
         + controller->kd * derivative;
-    *controller->y = PID2_CLAMP(y, -controller->outMax, controller->outMax);
+    *controller->y = PID_CLAMP(y, -controller->outMax, controller->outMax);
 }
 
 
 
-uint32_t PID2_iterate(void)
+uint32_t pid_iterate(void)
 {
     size_t i;
     uint32_t ticks;
@@ -128,15 +128,15 @@ uint32_t PID2_iterate(void)
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        ticks = (uint32_t)PID2_TIMER_TOP * PID2_overflows + PID2_TIMER_TCNT;
-        PID2_TIMER_TCNT = 0;
-        PID2_overflows = 0;
+        ticks = (uint32_t)PID_TIMER_TOP * pid_overflows + PID_TIMER_TCNT;
+        PID_TIMER_TCNT = 0;
+        pid_overflows = 0;
     }
     
     dt = (double)ticks / F_CPU;
     
-    for(i=0; i<PID2_n; i++)
-        PID2_iterateSingle((PID_t*)&PID2_controllers[i], dt);
+    for(i=0; i<pid_n; i++)
+        pid_iterateSingle((Pid_t*)&pid_controllers[i], dt);
     
     
     return ticks;
@@ -144,8 +144,8 @@ uint32_t PID2_iterate(void)
 
 
 
-ISR(PID2_vect)
+ISR(PID_vect)
 {
-    if(PID2_overflows < UINT16_MAX)
-        PID2_overflows++;
+    if(pid_overflows < UINT16_MAX)
+        pid_overflows++;
 }

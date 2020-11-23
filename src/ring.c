@@ -1,12 +1,12 @@
 /*
- * RING.c
+ * ring.c
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -29,7 +29,7 @@
 
 
 
-#include "RING.h"
+#include "ring.h"
 
 
 
@@ -37,59 +37,59 @@
 
 
 
-RING_t RING_init(uint8_t* buf, size_t len)
+Ring_t ring_init(uint8_t *buf, size_t len)
 {
     return RING_INIT(buf, len);
 }
 
 
 
-bool RING_isEmpty(RING_t RING)
+bool ring_isEmpty(Ring_t ring)
 {
-    return RING.read == RING.write;
+    return ring.read == ring.write;
 }
 
-bool RING_isFull(RING_t RING)
+bool ring_isFull(Ring_t ring)
 {
-    return RING_INC_ROLL_OVER(RING.write, RING.buf, RING.end) == RING.read;
+    return RING_INC_ROLL_OVER(ring.write, ring.buf, ring.end) == ring.read;
 }
 
-size_t RING_pushAvailable(RING_t RING)
+size_t ring_pushAvailable(Ring_t ring)
 {
-    if(RING.write < RING.read)
-        return RING.read - RING.write - 1;
+    if(ring.write < ring.read)
+        return ring.read - ring.write - 1;
     else
-        return (RING.end - RING.buf) - (RING.write - RING.read) - 1;
+        return (ring.end - ring.buf) - (ring.write - ring.read) - 1;
 }
 
-size_t RING_popAvailable(RING_t RING)
+size_t ring_popAvailable(Ring_t ring)
 {
-    if(RING.read <= RING.write)
-        return RING.write - RING.read;
+    if(ring.read <= ring.write)
+        return ring.write - ring.read;
     else
-        return (RING.end - RING.buf) - (RING.read - RING.write);
+        return (ring.end - ring.buf) - (ring.read - ring.write);
 }
 
 
-bool RING_push(RING_t* RING, uint8_t data)
+bool ring_push(Ring_t *ring, uint8_t data)
 {
-    if(RING_isFull(*RING))
+    if(ring_isFull(*ring))
         return 1;
     
-    *RING->write = data;
-    RING->write = RING_INC_ROLL_OVER(RING->write, RING->buf, RING->end);
+    *ring->write = data;
+    ring->write = RING_INC_ROLL_OVER(ring->write, ring->buf, ring->end);
     
     return 0;
 }
 
-bool RING_pushOver(RING_t* RING, uint8_t data)
+bool ring_pushOver(Ring_t *ring, uint8_t data)
 {
-    *RING->write = data;
-    RING->write = RING_INC_ROLL_OVER(RING->write, RING->buf, RING->end);
+    *ring->write = data;
+    ring->write = RING_INC_ROLL_OVER(ring->write, ring->buf, ring->end);
     
-    if(RING->read == RING->write)
+    if(ring->read == ring->write)
     {
-        RING->read = RING_INC_ROLL_OVER(RING->read, RING->buf, RING->end);
+        ring->read = RING_INC_ROLL_OVER(ring->read, ring->buf, ring->end);
         return 1;
     }
     
@@ -97,23 +97,23 @@ bool RING_pushOver(RING_t* RING, uint8_t data)
 }
 
 
-bool RING_pop(RING_t* RING, uint8_t* data)
+bool ring_pop(Ring_t *ring, uint8_t *data)
 {
-    if(RING_isEmpty(*RING))
+    if(ring_isEmpty(*ring))
         return 1;
     
-    *data = *RING->read;
-    RING->read = RING_INC_ROLL_OVER(RING->read, RING->buf, RING->end);
+    *data = *ring->read;
+    ring->read = RING_INC_ROLL_OVER(ring->read, ring->buf, ring->end);
     
     return 0;
 }
 
-bool RING_peek(RING_t* RING, uint8_t* data)
+bool ring_peek(Ring_t *ring, uint8_t *data)
 {
-    if(RING_isEmpty(*RING))
+    if(ring_isEmpty(*ring))
         return 1;
     
-    *data = *RING->read;
+    *data = *ring->read;
     
     return 0;
 }

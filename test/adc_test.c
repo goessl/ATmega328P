@@ -1,13 +1,13 @@
 /*
- * UART_main.c
+ * adc_test.c
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,13 +30,11 @@
 
 
 
-
+#include <avr/interrupt.h>
+#include <util/delay.h>
 #include <stdio.h>
-#include "UART.h"
-
-
-
-#define MAX_LENGTH 80
+#include "adc.h"
+#include "uart.h"
 
 
 
@@ -44,7 +42,8 @@ void init(void);
 
 int main(void)
 {
-    char s[MAX_LENGTH];
+    size_t i;
+    uint16_t channels[ADC_N];
     
     
     
@@ -52,12 +51,17 @@ int main(void)
     
     while(1)
     {
-        fgets(s, MAX_LENGTH, &UART_in);
-        fputs(s, &UART_out);
+        adc_getAll(channels);
+        for(i=0; i<ADC_N-1; i++)
+            printf("%4d, ", channels[i]);
+        printf("%4d\n", channels[ADC_N-1]);
+        _delay_ms(250);
     }
 }
 
 void init(void)
 {
-    UART_init();
+    uart_init();
+    adc_init();
+    sei();
 }

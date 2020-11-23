@@ -1,13 +1,13 @@
 /*
- * ESC.h
+ * spiint.h
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2019 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,26 +30,44 @@
 
 
 
-#ifndef ESC_H_
-#define ESC_H_
+#ifndef SPIINT_H_
+#define SPIINT_H_
 
 
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 
 
-void ESC_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n);
-void ESC_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n);
+//Max frequency
+#ifndef SPI_FREQUENCY
+    #define SPI_FREQUENCY 1000000
+#endif
 
-void ESC_setMotor(size_t index, uint8_t value);
-void ESC_setMotorScaled(size_t index, double percent);
-void ESC_setMotors(uint8_t* values);
-void ESC_setMotorsScaled(double* percents);
-void ESC_setAllMotors(uint8_t value);
-void ESC_setAllMotorsScaled(double percent);
+#ifndef SPI_MIN_FREQUENCY
+    #define SPI_MIN_FREQUENCY 0
+#endif
+
+#ifndef SPI_MODE
+    #define SPI_MODE 0
+#endif
+
+#ifndef SPI_DORD
+    #define SPI_DORD 0
+#endif
 
 
 
-#endif /* ESC_H_ */
+void spiint_init(void);
+
+bool spiint_isBusy(void);
+void spiint_flush(void);
+
+void spiint_transmitBurst(uint8_t *out, uint8_t *in, size_t len,
+    uint8_t *port, uint8_t pin);
+
+
+
+#endif /* SPIINT_H_ */

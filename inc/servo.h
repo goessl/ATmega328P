@@ -1,13 +1,13 @@
 /*
- * SERVO.h
+ * servo.h
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -46,14 +46,14 @@
 
 
 
-void SERVO_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* MASKS, size_t n);
+void servo_init(uint8_t **DDRs, uint8_t **PORTs, uint8_t *maks, size_t n);
 
-void SERVO_setServo(size_t index, uint8_t value);
-void SERVO_setServoScaled(size_t index, double percent);
-void SERVO_setServos(uint8_t* values);
-void SERVO_setServosScaled(double* percents);
-void SERVO_setAllServos(uint8_t value);
-void SERVO_setAllServosScaled(double percent);
+void servo_setServo(size_t index, uint8_t value);
+void servo_setServoScaled(size_t index, double percent);
+void servo_setServos(uint8_t *values);
+void servo_setServosScaled(double *percents);
+void servo_setAllServos(uint8_t value);
+void servo_setAllServosScaled(double percent);
 
 
 

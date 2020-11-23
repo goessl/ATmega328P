@@ -1,13 +1,13 @@
 /*
- * UART2.c
+ * uartint.c
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -33,8 +33,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
-#include "RING.h"
-#include "UART2.h"
+#include "ring.h"
+#include "uartint.h"
 
 
 
@@ -49,43 +49,43 @@
 
 
 
-static int UART2_putc(char c, FILE* stream)
+static int uartint_putc(char c, FILE *stream)
 {
     (void)stream;
-    if(UART2_transmit(c))
+    if(uartint_transmit(c))
         return _FDEV_EOF;
     
     return c;
 }
 
-static int UART2_getc(FILE* stream)
+static int uartint_getc(FILE *stream)
 {
-    char c;
+    uint8_t c;
     
     (void)stream;
-    if(UART2_receive((uint8_t*)&c))
+    if(uartint_receive(&c))
         return _FDEV_EOF;
     
     return c;
 }
 
-FILE UART2_out = FDEV_SETUP_STREAM(UART2_putc, NULL, _FDEV_SETUP_WRITE);
-FILE UART2_in = FDEV_SETUP_STREAM(NULL, UART2_getc, _FDEV_SETUP_READ);
+FILE uartint_out = FDEV_SETUP_STREAM(uartint_putc, NULL, _FDEV_SETUP_WRITE);
+FILE uartint_in = FDEV_SETUP_STREAM(NULL, uartint_getc, _FDEV_SETUP_READ);
 
 
 
-static volatile uint8_t UART2_transmitArray[UART2_BUF_LEN],
-    UART2_receiveArray[UART2_BUF_LEN];
-static volatile RING_t UART2_transmitBuf, UART2_receiveBuf;
+static volatile Ring_t uartint_transmitBuf, uartint_receiveBuf;
+static volatile uint8_t uartint_transmitArray[UARTINT_BUF_LEN],
+    uartint_receiveArray[UARTINT_BUF_LEN];
 
 
 
-void UART2_init(void)
+void uartint_init(void)
 {
-    UART2_transmitBuf =
-        RING_init((uint8_t*)UART2_transmitArray, UART2_BUF_LEN);
-    UART2_receiveBuf =
-        RING_init((uint8_t*)UART2_receiveArray, UART2_BUF_LEN);
+    uartint_transmitBuf =
+        ring_init((uint8_t*)uartint_transmitArray, UARTINT_BUF_LEN);
+    uartint_receiveBuf =
+        ring_init((uint8_t*)uartint_receiveArray, UARTINT_BUF_LEN);
     
     
     UBRR0H = UBRRH_VALUE;
@@ -97,8 +97,8 @@ void UART2_init(void)
     UCSR0B |= (1 << RXCIE0) | (1 << RXEN0) | (1 << TXEN0);
     
     #ifndef NO_UART_STD
-        stdout = &UART2_out;
-        stdin = &UART2_in;
+        stdout = &uartint_out;
+        stdin = &uartint_in;
     #endif
 }
 
@@ -106,13 +106,13 @@ void UART2_init(void)
 
 //Non-blocking gets, returns s when the line is complete
 //https://gist.github.com/sebig3000/17c049f3562fccbbdfaeff090d166d60
-char* UART2_ngets(char* s, size_t n)
+char *uartint_ngets(char *s, size_t n)
 {
     uint8_t c;
     static size_t i = 0;
     
     
-    while(!UART2_receive(&c))
+    while(!uartint_receive(&c))
     {
         s[i++] = c;
         
@@ -130,19 +130,19 @@ char* UART2_ngets(char* s, size_t n)
 
 
 
-size_t UART2_transmitAvailable(void)
+size_t uartint_transmitAvailable(void)
 {
     size_t ret;
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        ret = RING_pushAvailable(UART2_transmitBuf);
+        ret = ring_pushAvailable(uartint_transmitBuf);
     }
     
     return ret;
 }
 
-void UART2_transmitFlush(void)
+void uartint_transmitFlush(void)
 {
     bool empty;
     
@@ -150,23 +150,23 @@ void UART2_transmitFlush(void)
     {
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
-            empty = RING_isEmpty(UART2_transmitBuf);
+            empty = ring_isEmpty(uartint_transmitBuf);
         }
     } while(!empty);
 }
 
-bool UART2_transmit(uint8_t data)
+bool uartint_transmit(uint8_t data)
 {
     bool fail;
     
     
-    while(UART2_transmitAvailable() < 1)
+    while(uartint_transmitAvailable() < 1)
         ;
     
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        fail = RING_push((RING_t*)&UART2_transmitBuf, data);
+        fail = ring_push((Ring_t*)&uartint_transmitBuf, data);
     }
     
     if(!fail)
@@ -175,58 +175,58 @@ bool UART2_transmit(uint8_t data)
     return fail;
 }
 
-size_t UART2_transmitBurst(uint8_t* data, size_t len)
+size_t uartint_transmitBurst(uint8_t *data, size_t len)
 {
     size_t i = 0;
     
-    while(i<len && !UART2_transmit(*data++))
+    while(i<len && !uartint_transmit(*data++))
         i++;
     
     return i;
 }
 
 
-size_t UART2_receiveAvailable(void)
+size_t uartint_receiveAvailable(void)
 {
     size_t ret;
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        ret = RING_popAvailable(UART2_receiveBuf);
+        ret = ring_popAvailable(uartint_receiveBuf);
     }
     
     return ret;
 }
 
-bool UART2_receivePeek(uint8_t* data)
+bool uartint_receivePeek(uint8_t *data)
 {
     bool ret;
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        ret = RING_peek((RING_t*)&UART2_receiveBuf, data);
+        ret = ring_peek((Ring_t*)&uartint_receiveBuf, data);
     }
     
     return ret;
 }
 
-bool UART2_receive(uint8_t* data)
+bool uartint_receive(uint8_t* data)
 {
     bool ret;
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        ret = RING_pop((RING_t*)&UART2_receiveBuf, data);
+        ret = ring_pop((Ring_t*)&uartint_receiveBuf, data);
     }
     
     return ret;
 }
 
-size_t UART2_receiveBurst(uint8_t* data, size_t len)
+size_t uartint_receiveBurst(uint8_t* data, size_t len)
 {
     size_t i = 0;
     
-    while(i<len && !UART2_receive(data++))
+    while(i<len && !uartint_receive(data++))
         i++;
     
     return i;
@@ -238,7 +238,7 @@ ISR(USART_UDRE_vect)
 {
     uint8_t c;
     
-    if(!RING_pop((RING_t*)&UART2_transmitBuf, &c))
+    if(!ring_pop((Ring_t*)&uartint_transmitBuf, &c))
         UDR0 = c;
     else
         UCSR0B &= ~(1 << UDRIE0);
@@ -246,9 +246,9 @@ ISR(USART_UDRE_vect)
 
 ISR(USART_RX_vect)
 {
-    #ifdef UART2_OVERWRITE
-        RING_pushOver((RING_t*)&UART2_receiveBuf, UDR0);
+    #ifdef UARTINT_OVERWRITE
+        ring_pushOver((Ring_t*)&uartint_receiveBuf, UDR0);
     #else
-        RING_push((RING_t*)&UART2_receiveBuf, UDR0);
+        ring_push((Ring_t*)&uartint_receiveBuf, UDR0);
     #endif
 }

@@ -1,12 +1,13 @@
 /*
- * RING.h
+ * adc.h
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
+ * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -29,46 +30,30 @@
 
 
 
-#ifndef RING_H_
-#define RING_H_
+#ifndef ADC_H_
+#define ADC_H_
 
 
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 
 
-typedef struct
-{
-    uint8_t* buf;
-    uint8_t* end;
-    uint8_t* write;
-    uint8_t* read;
-} RING_t;
+#define ADC_N 8
+#define ADC_FREQUENCY_MAX 200000
+#define ADC_FREQUENCY_MIN 50000
+#define ADC_TOP 0x3FF
 
 
 
-#define RING_INIT(buf_, len_) \
-    ((RING_t){.buf = (buf_), .end = (buf_)+(len_), \
-        .write = (buf_), .read = (buf_)})
+void adc_init(void);
+
+uint16_t adc_get(size_t index);
+double adc_getScaled(size_t index);
+void adc_getAll(uint16_t *channel);
+void adc_getAllScaled(double *channel);
 
 
 
-RING_t RING_init(uint8_t* buf, size_t len);
-
-bool RING_isEmpty(RING_t RING);
-bool RING_isFull(RING_t RING);
-size_t RING_pushAvailable(RING_t RING);
-size_t RING_popAvailable(RING_t RING);
-
-bool RING_push(RING_t* RING, uint8_t data);
-bool RING_pushOver(RING_t* RING, uint8_t data);
-
-bool RING_pop(RING_t* RING, uint8_t* data);
-bool RING_peek(RING_t* RING, uint8_t* data);
-
-
-
-#endif /* RING_H_ */
+#endif /* ADC_H_ */

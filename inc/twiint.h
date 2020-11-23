@@ -1,13 +1,13 @@
 /*
- * TWI2.h
+ * twiint.h
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,8 +30,8 @@
 
 
 
-#ifndef TWI2_H_
-#define TWI2_H_
+#ifndef TWIINT_H_
+#define TWIINT_H_
 
 
 
@@ -50,13 +50,13 @@
 
 
 
-void TWI2_init(void);
+void twiint_init(void);
 
-bool TWI2_busy(void);
-void TWI2_flush(void);
+bool twiint_busy(void);
+void twiint_flush(void);
 
-void TWI2_start(uint8_t address, uint8_t* data, size_t len);
+void twiint_start(uint8_t address, uint8_t *data, size_t len);
 
 
 
-#endif /* TWI2_H_ */
+#endif /* TWIINT_H_ */

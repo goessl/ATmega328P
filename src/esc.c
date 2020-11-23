@@ -1,13 +1,13 @@
 /*
- * UART2.h
+ * esc.c
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,46 +30,59 @@
 
 
 
-#ifndef UART2_H_
-#define UART2_H_
+#include <util/delay.h>
+#include "servo.h"
+#include "esc.h"
 
 
 
-#ifndef BAUD
-    #define BAUD 9600
-#endif
+void esc_init(uint8_t **DDRs, uint8_t **PORTs, uint8_t *masks, size_t n)
+{
+    servo_init(DDRs, PORTs, masks, n);
+    
+    servo_setAllServos(0x00);
+    _delay_ms(4000);
+}
 
-#ifndef UART2_BUF_LEN
-    #define UART2_BUF_LEN 80
-#endif
-
-
-
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-
-
-
-extern FILE UART2_out;
-extern FILE UART2_in;
-
-
-
-void UART2_init(void);
-
-char* UART2_ngets(char* s, size_t len);
-
-size_t UART2_transmitAvailable(void);
-void UART2_transmitFlush(void);
-bool UART2_transmit(uint8_t data);
-size_t UART2_transmitBurst(uint8_t* data, size_t len);
-
-size_t UART2_receiveAvailable(void);
-bool UART2_receivePeek(uint8_t* data);
-bool UART2_receive(uint8_t* data);
-size_t UART2_receiveBurst(uint8_t* data, size_t len);
+void esc_initThrottle(uint8_t **DDRs, uint8_t **PORTs, uint8_t *masks, size_t n)
+{
+    servo_init(DDRs, PORTs, masks, n);
+    
+    servo_setAllServos(0xFF);
+    _delay_ms(4000);
+    
+    servo_setAllServos(0x00);
+    _delay_ms(4000);
+}
 
 
 
-#endif /* UART2_H_ */
+void esc_setMotor(size_t index, uint8_t value)
+{
+    servo_setServo(index, value);
+}
+
+void esc_setMotorScaled(size_t index, double percent)
+{
+    servo_setServoScaled(index, percent);
+}
+
+void esc_setMotors(uint8_t *values)
+{
+    servo_setServos(values);
+}
+
+void esc_setMotorsScaled(double *percents)
+{
+    servo_setServosScaled(percents);
+}
+
+void esc_setAllMotors(uint8_t value)
+{
+    servo_setAllServos(value);
+}
+
+void esc_setAllMotorsScaled(double percent)
+{
+    servo_setAllServosScaled(percent);
+}

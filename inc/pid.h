@@ -1,13 +1,13 @@
 /*
- * ADC_main.c
+ * pid.h
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2019 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,38 +30,52 @@
 
 
 
-#include <avr/interrupt.h>
-#include <util/delay.h>
-#include <stdio.h>
-#include "ADC.h"
-#include "UART.h"
+#ifndef PID_H_
+#define PID_H_
 
 
 
-void init(void);
+#include <stddef.h>
+#include <stdint.h>
 
-int main(void)
+
+
+#ifndef PID_TIMER
+    #define PID_TIMER 2
+#endif
+
+
+
+typedef struct
 {
-    size_t i;
-    uint16_t channels[ADC_N];
+    double *w;
+    double *y;
+    double *x;
     
+    double kp, ki, kd;
     
-    
-    init();
-    
-    while(1)
-    {
-        ADC_getAll(channels);
-        for(i=0; i<ADC_N-1; i++)
-            printf("%4d, ", channels[i]);
-        printf("%4d\n", channels[ADC_N-1]);
-        _delay_ms(250);
-    }
-}
+    double sum, last;
+    double iMax, dMax, outMax;
+} Pid_t;
 
-void init(void)
-{
-    UART_init();
-    ADC_init();
-    sei();
-}
+
+
+#define PID_INIT_CONTROLLER(_w, _y, _x, _kp, _ki, _kd, _iMax, _dMax, _outMax) \
+    ((Pid_t){.w = (_w), .y = (_y), .x = (_x), \
+        .kp = (_kp), .ki = (_ki), .kd = (_kd), \
+        .sum = 0, .last = 0, \
+        .iMax = (_iMax), .dMax = (_dMax), .outMax = (_outMax)})
+
+
+
+void pid_init(Pid_t *controllers, size_t n);
+
+Pid_t pid_initController(double *w, double *y, double *x,
+    double kp, double ki, double kd,
+    double iMax, double dMax, double outMax);
+
+uint32_t pid_iterate(void);
+
+
+
+#endif /* PID_H_ */

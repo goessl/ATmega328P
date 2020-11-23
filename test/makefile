@@ -59,23 +59,23 @@ all: $(TESTHEXS) $(SRCOBJS)
 
 
 #Flashing
-upload_ADC: ADC_main.hex
-	$(PROG) -Uflash:w:"ADC_main.hex":i
+upload_adc: adc_test.hex
+	$(PROG) -Uflash:w:"adc_test.hex":i
 
-upload_SERVO: SERVO_main.hex
-	$(PROG) -Uflash:w:"SERVO_main.hex":i
+upload_servo: servo_test.hex
+	$(PROG) -Uflash:w:"servo_test.hex":i
 
-upload_SPI: SPI_main.hex
-	$(PROG) -Uflash:w:"SPI_main.hex":i
+upload_spi: spi_test.hex
+	$(PROG) -Uflash:w:"spi_test.hex":i
 
-upload_TWI: TWI_main.hex
-	$(PROG) -Uflash:w:"TWI_main.hex":i
+upload_twi: twi_test.hex
+	$(PROG) -Uflash:w:"twi_test.hex":i
 
-upload_UART: UART_main.hex
-	$(PROG) -Uflash:w:"UART_main.hex":i
+upload_uart: uart_test.hex
+	$(PROG) -Uflash:w:"uart_test.hex":i
 
-upload_UART2: UART2_main.hex
-	$(PROG) -Uflash:w:"UART2_main.hex":i
+upload_uartint: uartint_test.hex
+	$(PROG) -Uflash:w:"uartint_test.hex":i
 
 
 

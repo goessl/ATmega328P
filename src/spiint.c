@@ -1,13 +1,13 @@
 /*
- * SPI.c
+ * spiint.c
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2019 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -31,7 +31,8 @@
 
 
 #include <avr/io.h>
-#include "SPI.h"
+#include <avr/interrupt.h>
+#include "spiint.h"
 
 
 
@@ -106,43 +107,72 @@
 
 
 
-void SPI_init(void)
+static volatile uint8_t *spiint_out;
+static volatile uint8_t *spiint_in;
+static volatile size_t spiint_len;
+static volatile uint8_t *spiint_port;
+static volatile uint8_t spiint_pin;
+
+
+
+void spiint_init(void)
 {
     DDRB |= (1 << DDB2) | (1 << DDB3) | (1 << DDB5);
     //DDRB &= ~(1 << DDB4);
     
     
     SPSR |= (SPI2X_VALUE << SPI2X);
-    SPCR |= (1 << SPE) | (DORD_VALUE << DORD) | (1 << MSTR)
+    SPCR |= (1 << SPIE) | (1 << SPE) | (DORD_VALUE << DORD) | (1 << MSTR)
         | (CPOL_VALUE << CPOL) | (CPHA_VALUE << CPHA)
         | (SPR1_VALUE << SPR1) | (SPR0_VALUE << SPR0);
 }
 
 
 
-uint8_t SPI_writeRead(uint8_t data)
+bool spiint_isBusy(void)
 {
-    SPDR = data;
-    while(~SPSR & (1 << SPIF))
+    return spiint_len;
+}
+
+void spiint_flush(void)
+{
+    while(spiint_len)
         ;
+}
+
+
+
+void spiint_transmitBurst(uint8_t *out, uint8_t *in, size_t len,
+    uint8_t *port, uint8_t pin)
+{
+    spiint_flush();
     
-    return SPDR;
+    spiint_out = out;
+    spiint_in = in;
+    spiint_len = len;
+    spiint_port = port;
+    spiint_pin = pin;
+    
+    
+    if(spiint_port)
+        *spiint_port &= ~(1 << spiint_pin);
+    
+    if(spiint_len)
+        SPDR = *spiint_out++;
+    else
+        if(spiint_port)
+            *spiint_port |= (1 << spiint_pin);
 }
 
-void SPI_writeBurst(uint8_t* out, size_t len)
-{
-    while(len--)
-        SPI_writeRead(*out++);
-}
 
-void SPI_readBurst(uint8_t* in, size_t len)
-{
-    while(len--)
-        *in++ = SPI_writeRead(0x00);
-}
 
-void SPI_writeReadBurst(uint8_t* out, uint8_t* in, size_t len)
+ISR(SPI_STC_vect)
 {
-    while(len--)
-        *in++ = SPI_writeRead(*out++);
+    *spiint_in++ = SPDR;
+    
+    if(--spiint_len)
+        SPDR = *spiint_out++;
+    else
+        if(spiint_port)
+            *spiint_port |= (1 << spiint_pin);
 }

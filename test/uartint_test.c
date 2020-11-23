@@ -1,13 +1,13 @@
 /*
- * UART2_main.c
+ * uartint_test.c
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +32,7 @@
 
 #include <avr/interrupt.h>
 #include <stdio.h>
-#include "UART2.h"
-
-
-
-#define MAX_LEN 80
+#include "uartint.h"
 
 
 
@@ -44,6 +40,7 @@ void init(void);
 
 int main(void)
 {
+    #define MAX_LEN 80
     char s[MAX_LEN];
     
     
@@ -54,13 +51,13 @@ int main(void)
     {
         //Non-blocking gets, returns s when the line is complete
         //https://gist.github.com/sebig3000/17c049f3562fccbbdfaeff090d166d60
-        if(UART2_ngets(s, MAX_LEN))
+        if(uartint_ngets(s, MAX_LEN))
             fputs(s, stdout);
     }
 }
 
 void init(void)
 {
-    UART2_init();
+    uartint_init();
     sei();
 }

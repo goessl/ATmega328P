@@ -1,13 +1,13 @@
 /*
- * SPI2.h
+ * esc.h
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2019 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,44 +30,26 @@
 
 
 
-#ifndef SPI2_H_
-#define SPI2_H_
+#ifndef ESC_H_
+#define ESC_H_
 
 
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 
 
-//Max frequency
-#ifndef SPI_FREQUENCY
-    #define SPI_FREQUENCY 1000000
-#endif
+void esc_init(uint8_t **DDRs, uint8_t **PORTs, uint8_t *masks, size_t n);
+void esc_initThrottle(uint8_t **DDRs, uint8_t **PORTs, uint8_t *masks, size_t n);
 
-#ifndef SPI_MIN_FREQUENCY
-    #define SPI_MIN_FREQUENCY 0
-#endif
-
-#ifndef SPI_MODE
-    #define SPI_MODE 0
-#endif
-
-#ifndef SPI_DORD
-    #define SPI_DORD 0
-#endif
+void esc_setMotor(size_t index, uint8_t value);
+void esc_setMotorScaled(size_t index, double percent);
+void esc_setMotors(uint8_t *values);
+void esc_setMotorsScaled(double *percents);
+void esc_setAllMotors(uint8_t value);
+void esc_setAllMotorsScaled(double percent);
 
 
 
-void SPI2_init(void);
-
-bool SPI2_isBusy(void);
-void SPI2_flush(void);
-
-void SPI2_transmitBurst(uint8_t* out, uint8_t* in, size_t len,
-    uint8_t* port, uint8_t pin);
-
-
-
-#endif /* SPI2_H_ */
+#endif /* ESC_H_ */

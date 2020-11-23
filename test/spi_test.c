@@ -1,13 +1,13 @@
 /*
- * SERVO_main.c
+ * spi_test.c
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,58 +30,32 @@
 
 
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <util/delay.h>
-#include "SERVO.h"
+#include <stdio.h>
+#include "spi.h"
+#include "uart.h"
 
 
 
 void init(void);
 
-
-
-#define SERVO_N 4
-
-uint8_t* DDRs[SERVO_N] = {
-    (uint8_t*)&DDRB,
-    (uint8_t*)&DDRB,
-    (uint8_t*)&DDRB,
-    (uint8_t*)&DDRB};
-uint8_t* PORTS[SERVO_N] = {
-    (uint8_t*)&PORTB,
-    (uint8_t*)&PORTB,
-    (uint8_t*)&PORTB,
-    (uint8_t*)&PORTB};
-uint8_t masks[SERVO_N] = {
-    (uint8_t)(1 << PORTB5),
-    (uint8_t)(1 << PORTB4),
-    (uint8_t)(1 << PORTB3),
-    (uint8_t)(1 << PORTB2)};
-
-
-
 int main(void)
 {
-    size_t i;
-    uint8_t servos[SERVO_N] = {0x00, 0xFF/4, 0xFF/2, 0xFF/4*3};
+    uint16_t byte;
     
     
     
     init();
     
+    printf("Sent : Received\n");
+    for(byte=0x00; byte<=0xFF; byte++)
+        printf("0x%02X : 0x%02X\n", (uint8_t)byte, spi_writeRead(byte));
+    
     while(1)
-    {
-        SERVO_setServos(servos);
-        for(i=0; i<SERVO_N; i++)
-            servos[i]++;
-        
-        _delay_ms(50);
-    }
+        ;
 }
 
 void init(void)
 {
-    SERVO_init(DDRs, PORTS, masks, SERVO_N);
-    sei();
+    uart_init();
+    spi_init();
 }

@@ -1,13 +1,13 @@
 /*
- * PID2.h
+ * spi.h
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2019 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,8 +30,8 @@
 
 
 
-#ifndef PID2_H_
-#define PID2_H_
+#ifndef SPI_H_
+#define SPI_H_
 
 
 
@@ -40,42 +40,32 @@
 
 
 
-#ifndef PID2_TIMER
-    #define PID2_TIMER 2
+//Max frequency
+#ifndef SPI_FREQUENCY
+    #define SPI_FREQUENCY 1000000
+#endif
+
+#ifndef SPI_MIN_FREQUENCY
+    #define SPI_MIN_FREQUENCY 0
+#endif
+
+#ifndef SPI_MODE
+    #define SPI_MODE 0
+#endif
+
+#ifndef SPI_DORD
+    #define SPI_DORD 0
 #endif
 
 
 
-typedef struct
-{
-    double* w;
-    double* y;
-    double* x;
-    
-    double kp, ki, kd;
-    
-    double sum, last;
-    double iMax, dMax, outMax;
-} PID_t;
+void spi_init(void);
+
+uint8_t spi_writeRead(uint8_t data);
+void spi_writeBurst(uint8_t *out, size_t len);
+void spi_readBurst(uint8_t *in, size_t len);
+void spi_writeReadBurst(uint8_t *out, uint8_t *in, size_t len);
 
 
 
-#define PID2_INIT_CONTROLLER(w_, y_, x_, kp_, ki_, kd_, iMax_, dMax_, outMax_) \
-    ((PID_t){.w = (w_), .y = (y_), .x = (x_), \
-        .kp = (kp_), .ki = (ki_), .kd = (kd_), \
-        .sum = 0, .last = 0, \
-        .iMax = (iMax_), .dMax = (dMax_), .outMax = (outMax_)})
-
-
-
-void PID2_init(PID_t* controllers, size_t n);
-
-PID_t PID2_initController(double* w, double* y, double* x,
-    double kp, double ki, double kd,
-    double iMax, double dMax, double outMax);
-
-uint32_t PID2_iterate(void);
-
-
-
-#endif /* PID_H_ */
+#endif /* SPI_H_ */

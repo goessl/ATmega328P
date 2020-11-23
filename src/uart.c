@@ -1,13 +1,13 @@
 /*
- * UART.c
+ * uart.c
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -32,7 +32,7 @@
 
 #include <avr/io.h>
 #include <stdbool.h>
-#include "UART.h"
+#include "uart.h"
 
 
 
@@ -47,25 +47,25 @@
 
 
 
-static int UART_putc(char c, FILE* stream)
+static int uart_putc(char c, FILE *stream)
 {
     (void)stream;
-    UART_transmit(c);
+    uart_transmit(c);
     return 0;
 }
 
-static int UART_getc(FILE* stream)
+static int uart_getc(FILE *stream)
 {
     (void)stream;
-    return UART_receive();
+    return uart_receive();
 }
 
-FILE UART_out = FDEV_SETUP_STREAM(UART_putc, NULL, _FDEV_SETUP_WRITE);
-FILE UART_in = FDEV_SETUP_STREAM(NULL, UART_getc, _FDEV_SETUP_READ);
+FILE uart_out = FDEV_SETUP_STREAM(uart_putc, NULL, _FDEV_SETUP_WRITE);
+FILE uart_in = FDEV_SETUP_STREAM(NULL, uart_getc, _FDEV_SETUP_READ);
 
 
 
-void UART_init(void)
+void uart_init(void)
 {
     UBRR0H = UBRRH_VALUE;
     UBRR0L = UBRRL_VALUE;
@@ -77,66 +77,66 @@ void UART_init(void)
     UCSR0B |= (1 << RXEN0) | (1 << TXEN0);
     
     #ifndef NO_UART_STD
-        stdout = &UART_out;
-        stdin = &UART_in;
+        stdout = &uart_out;
+        stdin = &uart_in;
     #endif
 }
 
 
 
-static bool UART_isReceiveComplete(void)
+static bool uart_isReceiveComplete(void)
 {
     return UCSR0A & (1 << RXC0);
 }
 
-static bool UART_isTransmitComplete(void)
+static bool uart_isTransmitComplete(void)
 {
     return UCSR0A & (1 << TXC0);
 }
 
-static bool UART_isDataEmpty(void)
+static bool uart_isDataEmpty(void)
 {
     return UCSR0A & (1 << UDRE0);
 }
 
 
 
-void UART_transmit(uint8_t data)
+void uart_transmit(uint8_t data)
 {
-    while(!UART_isDataEmpty())
+    while(!uart_isDataEmpty())
         ;
     
     UDR0 = data;
     
-    while(!UART_isTransmitComplete())
+    while(!uart_isTransmitComplete())
         ;
 }
 
-void UART_transmitBurst(uint8_t* data, size_t len)
+void uart_transmitBurst(uint8_t *data, size_t len)
 {
     while(len--)
     {
-        while(!UART_isDataEmpty())
+        while(!uart_isDataEmpty())
             ;
         
         UDR0 = *data++;
     }
     
-    while(!UART_isTransmitComplete())
+    while(!uart_isTransmitComplete())
         ;
 }
 
 
-uint8_t UART_receive(void)
+uint8_t uart_receive(void)
 {
-    while(!UART_isReceiveComplete())
+    while(!uart_isReceiveComplete())
         ;
     
     return UDR0;
 }
 
-void UART_receiveBurst(uint8_t* data, size_t len)
+void uart_receiveBurst(uint8_t *data, size_t len)
 {
     while(len--)
-        *data++ = UART_receive();
+        *data++ = uart_receive();
 }

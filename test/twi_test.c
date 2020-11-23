@@ -1,13 +1,13 @@
 /*
- * TWI_main.c
+ * twi_test.c
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,8 @@
 
 #include <avr/io.h>
 #include <stdio.h>
-#include "TWI.h"
-#include "UART.h"
+#include "twi.h"
+#include "uart.h"
 
 
 
@@ -50,10 +50,10 @@ int main(void)
     printf("Scanning ...\n");
     for(address=1; address<=127; address++)
     {
-        TWI_start();
-        if(!TWI_addressWrite(address))
+        twi_start();
+        if(!twi_addressWrite(address))
             printf("0x%02X\n", address);
-        TWI_stop();
+        twi_stop();
     }
     printf("Done!\n");
     
@@ -64,6 +64,6 @@ int main(void)
 
 void init(void)
 {
-    UART_init();
-    TWI_init();
+    uart_init();
+    twi_init();
 }

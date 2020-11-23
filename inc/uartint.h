@@ -1,13 +1,13 @@
 /*
- * ESC.c
+ * uartint.h
  * 
- * Author:      Sebastian Gössl
+ * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
  * LICENSE:
  * MIT License
  * 
- * Copyright (c) 2018 Sebastian Gössl
+ * Copyright (c) 2018 Sebastian Goessl
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,59 +30,46 @@
 
 
 
-#include <util/delay.h>
-#include "SERVO.h"
-#include "ESC.h"
+#ifndef UARTINT_H_
+#define UARTINT_H_
 
 
 
-void ESC_init(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
-{
-    SERVO_init(DDRs, PORTs, masks, n);
-    
-    SERVO_setAllServos(0x00);
-    _delay_ms(4000);
-}
+#ifndef BAUD
+    #define BAUD 9600
+#endif
 
-void ESC_initThrottle(uint8_t** DDRs, uint8_t** PORTs, uint8_t* masks, size_t n)
-{
-    SERVO_init(DDRs, PORTs, masks, n);
-    
-    SERVO_setAllServos(0xFF);
-    _delay_ms(4000);
-    
-    SERVO_setAllServos(0x00);
-    _delay_ms(4000);
-}
+#ifndef UARTINT_BUF_LEN
+    #define UARTINT_BUF_LEN 80
+#endif
 
 
 
-void ESC_setMotor(size_t index, uint8_t value)
-{
-    SERVO_setServo(index, value);
-}
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 
-void ESC_setMotorScaled(size_t index, double percent)
-{
-    SERVO_setServoScaled(index, percent);
-}
 
-void ESC_setMotors(uint8_t* values)
-{
-    SERVO_setServos(values);
-}
 
-void ESC_setMotorsScaled(double* percents)
-{
-    SERVO_setServosScaled(percents);
-}
+extern FILE uartint_out;
+extern FILE uartint_in;
 
-void ESC_setAllMotors(uint8_t value)
-{
-    SERVO_setAllServos(value);
-}
 
-void ESC_setAllMotorsScaled(double percent)
-{
-    SERVO_setAllServosScaled(percent);
-}
+
+void uartint_init(void);
+
+char *uartint_ngets(char *s, size_t len);
+
+size_t uartint_transmitAvailable(void);
+void uartint_transmitFlush(void);
+bool uartint_transmit(uint8_t data);
+size_t uartint_transmitBurst(uint8_t *data, size_t len);
+
+size_t uartint_receiveAvailable(void);
+bool uartint_receivePeek(uint8_t *data);
+bool uartint_receive(uint8_t *data);
+size_t uartint_receiveBurst(uint8_t *data, size_t len);
+
+
+
+#endif /* UARTINT_H_ */
