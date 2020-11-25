@@ -86,19 +86,19 @@ void pid_init(Pid_t *controllers, size_t n)
     #endif
 }
 
-Pid_t pid_initController(double *w, double *y, double *x,
+Pid_t pid_initController(double *w, double *r, double *u,
     double kp, double ki, double kd,
     double iMax, double dMax, double outMax)
 {
-    return PID_INIT_CONTROLLER(w, y, x, kp, ki, kd, iMax, dMax, outMax);
+    return PID_INIT_CONTROLLER(w, r, u, kp, ki, kd, iMax, dMax, outMax);
 }
 
 
 
 static void pid_iterateSingle(Pid_t *controller, double dt)
 {
-    double derivative, y;
-    double e = *controller->w - *controller->x;
+    double derivative, u;
+    double e = *controller->w - *controller->r;
     
     
     
@@ -110,10 +110,10 @@ static void pid_iterateSingle(Pid_t *controller, double dt)
     controller->last = e;
     
     
-    y = controller->kp * e
+    u = controller->kp * e
         + controller->ki * controller->sum
         + controller->kd * derivative;
-    *controller->y = PID_CLAMP(y, -controller->outMax, controller->outMax);
+    *controller->u = PID_CLAMP(u, -controller->outMax, controller->outMax);
 }
 
 

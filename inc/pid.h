@@ -49,8 +49,8 @@
 typedef struct
 {
     double *w;
-    double *y;
-    double *x;
+    double *r;
+    double *u;
     
     double kp, ki, kd;
     
@@ -60,8 +60,8 @@ typedef struct
 
 
 
-#define PID_INIT_CONTROLLER(_w, _y, _x, _kp, _ki, _kd, _iMax, _dMax, _outMax) \
-    ((Pid_t){.w = (_w), .y = (_y), .x = (_x), \
+#define PID_INIT_CONTROLLER(_w, _r, _u, _kp, _ki, _kd, _iMax, _dMax, _outMax) \
+    ((Pid_t){.w = (_w), .r = (_r), .u = (_u), \
         .kp = (_kp), .ki = (_ki), .kd = (_kd), \
         .sum = 0, .last = 0, \
         .iMax = (_iMax), .dMax = (_dMax), .outMax = (_outMax)})
@@ -70,7 +70,7 @@ typedef struct
 
 void pid_init(Pid_t *controllers, size_t n);
 
-Pid_t pid_initController(double *w, double *y, double *x,
+Pid_t pid_initController(double *w, double *r, double *u,
     double kp, double ki, double kd,
     double iMax, double dMax, double outMax);
 
