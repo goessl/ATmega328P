@@ -1,6 +1,8 @@
 /*
  * uart_test.c
  * 
+ * uart.h example.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
