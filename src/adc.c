@@ -1,6 +1,8 @@
 /*
  * adc.c
  * 
+ * Continuously sampling ADC driver.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
@@ -30,19 +32,21 @@
 
 
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <util/atomic.h>
+#include <avr/io.h>         //hardware registers
+#include <avr/interrupt.h>  //interrupt vectors
+#include <util/atomic.h>    //atomic blocks
 #include "adc.h"
 
 
 
+//default to Arduino oscillator
 #ifndef F_CPU
     #define F_CPU 16000000UL
     #warning "F_CPU not defined! Assuming 16MHz."
 #endif
 
 
+//find fitting prescaler
 #if F_CPU/2 <= ADC_FREQUENCY_MAX && F_CPU/2 >= ADC_FREQUENCY_MIN
     #define ADC_PRESCALER 2
     #define ADPS0_VALUE 0
@@ -84,7 +88,9 @@
 
 
 
+//channel indices of the currently sampling channel and the next one
 static volatile size_t adc_current = 0, adc_next = 0;
+//last samples
 static volatile uint16_t adc_channels[ADC_N] = {0};
 
 
@@ -99,50 +105,56 @@ void adc_init(void)
 
 
 
-uint16_t adc_get(size_t index)
+uint16_t adc_get(size_t channel)
 {
     uint16_t value;
     
+    //use atomic block because the values are 16 bit and
+    //therefore can't be read in a single clock cycle
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        value = adc_channels[index];
+        value = adc_channels[channel];
     }
     
     return value;
 }
 
-double adc_getScaled(size_t index)
+double adc_getScaled(size_t channel)
 {
-    return (double)adc_get(index) / ADC_TOP;
+    return (double)adc_get(channel) / ADC_TOP;
 }
 
-void adc_getAll(uint16_t *channel)
+void adc_getAll(uint16_t *channels)
 {
     size_t i;
     
     for(i=0; i<ADC_N; i++)
-        *channel++ = adc_get(i);
+        *channels++ = adc_get(i);
 }
 
-void adc_getAllScaled(double *channel)
+void adc_getAllScaled(double *channels)
 {
     size_t i;
     
     for(i=0; i<ADC_N; i++)
-        *channel++ = adc_getScaled(i);
+        *channels++ = adc_getScaled(i);
 }
 
 
 
 ISR(ADC_vect)
 {
+    //save sampled value
     adc_channels[adc_current] = ADC;
     
+    //advance indices
     adc_current = adc_next;
     if(++adc_next >= ADC_N)
         adc_next = 0;
     //adc_next = (adc_next + 1) % ADC_N;
     
+    //ADC is already sampling channel adc_current
+    //and will sample adc_next in the next cycle
     ADMUX = (ADMUX & ((1 << REFS0) | (1 << REFS0) | (1 << ADLAR))) |
         (adc_next & ((1 << MUX3) | (1 << MUX2) | (1 << MUX1) | (1 << MUX0)));
 }

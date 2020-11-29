@@ -1,6 +1,8 @@
 /*
  * adc_test.c
  * 
+ * adc.h example.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
