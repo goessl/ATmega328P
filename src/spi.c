@@ -1,6 +1,8 @@
 /*
  * spi.c
  * 
+ * Minimalistic, blocking SPI driver.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
@@ -30,17 +32,20 @@
 
 
 
-#include <avr/io.h>
+#include <avr/io.h> //hardware registers
 #include "spi.h"
 
 
 
+//default to Arduino oscillator
 #ifndef F_CPU
     #define F_CPU 16000000UL
     #warning "F_CPU not defined! Assuming 16MHz."
 #endif
 
 
+//try every prescaler so that the frequency will be
+//between SPI_MIN_FREQUENCY and SPI_FREQUENCY
 #if SPI_MIN_FREQUENCY <= F_CPU/2 && F_CPU/2 <= SPI_FREQUENCY
     #define SPI_PRESCALER 2
     #define SPR0_VALUE 0
@@ -108,7 +113,9 @@
 
 void spi_init(void)
 {
+    //SS, MOSI, SCK
     DDRB |= (1 << DDB2) | (1 << DDB3) | (1 << DDB5);
+    //MISO
     //DDRB &= ~(1 << DDB4);
     
     

@@ -1,6 +1,10 @@
 /*
  * spi_test.c
  * 
+ * spi.h example.
+ * Sends out all numbers between 0 and 0xFF
+ * and prints them to the UART with the corresponding responses.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
