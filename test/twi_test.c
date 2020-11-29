@@ -1,6 +1,10 @@
 /*
  * twi_test.c
  * 
+ * twi.h example.
+ * Scans the TWI bus for attached slaves
+ * and prints their addresses to the UART.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
@@ -51,7 +55,7 @@ int main(void)
     for(address=1; address<=127; address++)
     {
         twi_start();
-        if(!twi_addressWrite(address))
+        if(!twi_addressWrite(address))  //slave detected when ACK is returned
             printf("0x%02X\n", address);
         twi_stop();
     }

@@ -1,6 +1,8 @@
 /*
  * twi.h
  * 
+ * Minimalistic, blocking TWI driver.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
@@ -35,32 +37,37 @@
 
 
 
+#include <stdbool.h>    //bool type
+#include <stdint.h>     //uint8_t type
+#include <stddef.h>     //size_t type
+
+
+
+//default to Fast Mode
 #ifndef TWI_FREQUENCY
-    //Default to Fast Mode
     #define TWI_FREQUENCY 400000
 #endif
 
 
 
-#include <stdbool.h>    //bool
-#include <stdint.h>     //fixed width integers
-#include <stddef.h>     //size_t
-
-
-
 /**
- * Initializes the TWI hardware for master mode.
+ * Initializes the TWI hardware for master mode operating at TWI_FREQUENCY.
+ * Configures SCL and SDA (PC5 and PC4) as outputs.
  */
 void twi_init(void);
 
+
+
 /**
- * Sends a START condition.
- * Returns 0 on success.
+ * Sends a START condition and returns 0 on success.
+ * 
+ * @return 0 on success, 1 otherwise
  */
 bool twi_start(void);
 /**
- * Sends a repeated START condition.
- * Returns 0 on success.
+ * Sends a REPeated START condition and returns 0 on success.
+ * 
+ * @return 0 on success, 1 otherwise
  */
 bool twi_repStart(void);
 /**
@@ -69,58 +76,130 @@ bool twi_repStart(void);
 void twi_stop(void);
 
 /**
- * Sends the slave address with intend to write.
- * Returns 0 if an acknowledge bit was returned.
+ * Sends the slave address (7 bit, SLA) with intend to write (SLA_W).
+ * 
+ * @param address address of the slave (7-bit)
+ * @return 0 if an acknowledge bit (ACK) was returned, 1 otherwise (NACK)
  */
 bool twi_addressWrite(uint8_t address);
 /**
- * Sends the slave address with intend to read.
- * Returns 0 if an acknowledge bit was returned.
+ * Sends the slave address (7 bit, SLA) with intend to read (SLA_R).
+ * 
+ * @param address address of the slave (7-bit)
+ * @return 0 if an acknowledge bit (ACK) was returned, 1 otherwise (NACK)
  */
 bool twi_addressRead(uint8_t address);
 
 /**
- * Sends a data byte.
- * Returns 0 if an acknowledge bit was returned.
+ * Writes a single byte (DATA).
+ * 
+ * @param data byte to write
+ * @return 0 if an acknowledge bit (ACK) was returned, 1 otherwise (NACK)
  */
 bool twi_write(uint8_t data);
 /**
- * Sends data bytes until all bytes have been sent or no acknowledge bit has been returned.
- * Returns the number of bytes for which an acknowledge bit has been returned (len-1 on success).
+ * Writes multiple bytes (DATA) until all bytes have been written
+ * or no acknowledge bit (NACK) has been returned.
+ * 
+ * @param data location of the bytes to write
+ * @param len number of bytes to write
+ * @return number of bytes
+ * for which acknowledge bits (ACK) have been received (len-1 on success)
  */
 size_t twi_writeBurst(uint8_t *data, size_t len);
-
 /**
- * Reads a data byte and sends an acknowledge bit.
- * Returns 0 on success.
+ * Reads a single byte (DATA) and sends an acknowledge bit (ACK).
+ * 
+ * @param data location where the byte should be written to
+ * @return 0 on success, 1 otherwise
  */
 bool twi_readAck(uint8_t *data);
 /**
- * Reads data bytes and returns acknowledge bits until all bytes have been read or a read has failed.
- * Returns the number of bytes that have been read successfully.
+ * Reads multiple data bytes (DATA) and always sends acknowledge bits (ACK)
+ * until all bytes have been read or a read has failed.
+ * 
+ * @param data location where the bytes should be written to
+ * @param len number of bytes to read
+ * @return the number of bytes
+ * that have been read successfully (len on success)
  */
 size_t twi_readAckBurst(uint8_t *data, size_t len);
 /**
- * Reads a data byte and sends no acknowledge bit.
- * Returns 0 on success.
+ * Reads a single byte (DATA) and sends no acknowledge bit (NACK).
+ * 
+ * @param data location where the byte should be written to
+ * @return 0 on success, 1 otherwise
  */
 bool twi_readNoAck(uint8_t *data);
 /**
- * Reads data bytes and returns no acknowledge bits until all bytes have been read or a read has failed.
- * Returns the number of bytes that have been read successfully.
+ * Reads multiple data bytes (DATA) and never sends an acknowledge bit (NACK)
+ * until all bytes have been read or a read has failed.
+ * 
+ * @param data location where the bytes should be written to
+ * @param len number of bytes to read
+ * @return the number of bytes
+ * that have been read successfully (len on success)
  */
 size_t twi_readNoAckBurst(uint8_t *data, size_t len);
 
 /**
- * Writes the data to the given slave.
+ * Writes multiple bytes to a slave (START, SLA_W, DATA, ..., DATA, STOP).
+ * If sending the START condition fails, this function immediately returns 1.
+ * If any failure occurs after the START condition,
+ * the communication is immediately terminated with a STOP condition
+ * and then this function returns 1.
+ * 
+ * @param address address of the slave (7-bit)
+ * @param data location of the bytes to write
+ * @param len number of bytes to write
+ * @return 0 on success, 1 on failure
  */
 bool twi_writeToSlave(uint8_t address, uint8_t *data, size_t len);
 /**
- * Reads data from the given slave, always returning acknowledge bits except for the last byte.
+ * Reads multiple bytes from a slave
+ * (START, SLA_R, DATA+ACK, ..., DATA+ACK, DATA+NACK, STOP).
+ * If sending the START condition fails, this function immediately returns 1.
+ * If any failure occurs after the START condition,
+ * the communication is immediately terminated with a STOP condition
+ * and then this function returns 1.
+ * 
+ * @param address address of the slave (7-bit)
+ * @param data location where the bytes should be written to
+ * @param len number of bytes to read
+ * @return 0 on success, 1 on failure
  */
 bool twi_readFromSlave(uint8_t address, uint8_t *data, size_t len);
+/**
+ * Writes a single byte followed by multiple bytes to a slave
+ * (START, SLA_W, DATA (reg), DATA, ..., DATA, STOP).
+ * If sending the START condition fails, this function immediately returns 1.
+ * If any failure occurs after the START condition,
+ * the communication is immediately terminated with a STOP condition
+ * and then this function returns 1.
+ * 
+ * @param address address of the slave (7-bit)
+ * @param reg byte to write before the multiple bytes
+ * @param data location of the bytes to write
+ * @param len number of bytes to write
+ * @return 0 on success, 1 on failure
+ */
 bool twi_writeToSlaveRegister(
     uint8_t address, uint8_t reg, uint8_t *data, size_t len);
+/**
+ * First writes a single byte to a slave and the reads multiple bytes from it
+ * (START, SLA_W, DATA (reg),
+ * START, SLA_R, DATA+ACK, ..., DATA+ACK, DATA+NACK, STOP).
+ * If sending the START condition fails, this function immediately returns 1.
+ * If any failure occurs after the START condition,
+ * the communication is immediately terminated with a STOP condition
+ * and then this function returns 1.
+ * 
+ * @param address address of the slave (7-bit)
+ * @param reg byte to write before reading from the slave
+ * @param data location where the bytes should be written to
+ * @param len number of bytes to read
+ * @return 0 on success, 1 on failure
+ */
 bool twi_readFromSlaveRegister(
     uint8_t address, uint8_t reg, uint8_t *data, size_t len);
 

@@ -1,6 +1,8 @@
 /*
  * twi.c
  * 
+ * Minimalistic, blocking TWI driver.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
@@ -30,18 +32,20 @@
 
 
 
-#include <avr/io.h>
-#include <util/twi.h>
+#include <avr/io.h>     //hardware registers
+#include <util/twi.h>   //TWI status masks
 #include "twi.h"
 
 
 
+//default to Arduino oscillator
 #ifndef F_CPU
     #define F_CPU 16000000UL
     #warning "F_CPU not defined! Assuming 16MHz."
 #endif
 
 
+//set prescaler so that the TWBR value is as large as possible
 #if (F_CPU/TWI_FREQUENCY - 16) / (2 * 1) <= 0xFF
     #define TWI_PRESCALER 1
     #define TWPS0_VALUE 0
@@ -65,8 +69,10 @@
 #define TWBR_VALUE ((F_CPU/TWI_FREQUENCY - 16) / (2 * TWI_PRESCALER))
 
 
-#define TWI_ADDRESS_W(x)    (((x) << 1) & ~0x01)
-#define TWI_ADDRESS_R(x)    (((x) << 1) | 0x01)
+/** Mask TWI slave addressing byte with given id and write intend. */
+#define TWI_ADDRESS_W(id)    (((id) << 1) & ~0x01)
+/** Mask TWI slave addressing byte  with given id and read intend. */
+#define TWI_ADDRESS_R(id)    (((id) << 1) | 0x01)
 
 
 
@@ -80,6 +86,9 @@ void twi_init(void)
 
 
 
+/**
+ * Blocks until the current condition is completed.
+ */
 static void twi_waitForComplete(void)
 {
     while(~TWCR & (1 << TWINT))
