@@ -1,6 +1,8 @@
 /*
  * ring.c
  * 
+ * Circular buffer (FIFO) implementation.
+ * 
  * Author:      Sebastian Goessl
  * 
  * LICENSE:
@@ -33,6 +35,7 @@
 
 
 
+//adds 1 to n, rolling over at e and starting again at s
 #define RING_INC_ROLL_OVER(n, s, e) (((n)+1>=(e)) ? (s) : (n)+1)
 
 
@@ -73,6 +76,7 @@ size_t ring_popAvailable(Ring_t ring)
 
 bool ring_push(Ring_t *ring, uint8_t data)
 {
+    //cancel if full
     if(ring_isFull(*ring))
         return 1;
     
@@ -84,9 +88,12 @@ bool ring_push(Ring_t *ring, uint8_t data)
 
 bool ring_pushOver(Ring_t *ring, uint8_t data)
 {
+    //push without hesitation
     *ring->write = data;
     ring->write = RING_INC_ROLL_OVER(ring->write, ring->buf, ring->end);
     
+    //advance read pointer if old data has been overwritten
+    //so the buffer doesn't look empty (write==read)
     if(ring->read == ring->write)
     {
         ring->read = RING_INC_ROLL_OVER(ring->read, ring->buf, ring->end);
@@ -114,6 +121,7 @@ bool ring_peek(Ring_t *ring, uint8_t *data)
         return 1;
     
     *data = *ring->read;
+    //don't advance
     
     return 0;
 }
