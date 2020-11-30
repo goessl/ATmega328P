@@ -1,6 +1,8 @@
 /*
  * pid.c
  * 
+ * PID controller module.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
@@ -30,25 +32,32 @@
 
 
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <util/atomic.h>
+#include <avr/io.h>         //hardware registers
+#include <avr/interrupt.h>  //interrupt vectors
+#include <util/atomic.h>    //atomic blocks
 #include "pid.h"
 
 
 
+//default to Arduino oscillator
 #ifndef F_CPU
     #define F_CPU 16000000UL
     #warning "F_CPU not defined! Assuming 16MHz."
 #endif
 
+
+
+//returns the value v clamped between min and max
 #define PID_CLAMP(v, min, max) \
     (((v)<(min)) ? (min) : (((v)>(max)) ? (max) : (v)))
 
 
 
+/** Timer overflows since the last iteration. */
 static volatile uint16_t pid_overflows = 0;
+/** Registered PID controllers. */
 static volatile Pid_t *pid_controllers;
+/** Number of registered PID controllers. */
 static volatile size_t pid_n;
 
 
@@ -60,6 +69,7 @@ void pid_init(Pid_t *controllers, size_t n)
     
     
     
+    //start selected timer prescaled to 1 and with overflow interrupt
     #if PID_TIMER == 0
         
         TCCR0B |= (1 << CS00);
@@ -83,6 +93,8 @@ void pid_init(Pid_t *controllers, size_t n)
         #define PID_TIMER_TCNT TCNT2
         #define PID_TIMER_TOP 0xFF
         #define PID_vect TIMER2_OVF_vect
+    #else
+        #error "No valid PID_TIMER selected!"
     #endif
 }
 
@@ -95,6 +107,12 @@ Pid_t pid_initController(double *w, double *r, double *u,
 
 
 
+/**
+ * Update a singe pid controller.
+ * 
+ * @param controller pointer to the PID controler to update
+ * @param dt elapsed time in seconds since the last iteration
+ */
 static void pid_iterateSingle(Pid_t *controller, double dt)
 {
     double derivative, u;
@@ -126,6 +144,7 @@ uint32_t pid_iterate(void)
     
     
     
+    //read out timer and reset counter
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
         ticks = (uint32_t)PID_TIMER_TOP * pid_overflows + PID_TIMER_TCNT;
@@ -135,6 +154,8 @@ uint32_t pid_iterate(void)
     
     dt = (double)ticks / F_CPU;
     
+    
+    //update
     for(i=0; i<pid_n; i++)
         pid_iterateSingle((Pid_t*)&pid_controllers[i], dt);
     
@@ -144,6 +165,9 @@ uint32_t pid_iterate(void)
 
 
 
+//overflow interrupt
+//16MHz / 256 = 62.5kHz overflows
+//62.5kHz / 65536 = overflow counter limit reached at approx 0.95Hz
 ISR(PID_vect)
 {
     if(pid_overflows < UINT16_MAX)

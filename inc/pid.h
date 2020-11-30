@@ -1,6 +1,8 @@
 /*
  * pid.h
  * 
+ * PID controller module.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
@@ -35,31 +37,46 @@
 
 
 
-#include <stddef.h>
-#include <stdint.h>
+#include <stddef.h> //size_t type
+#include <stdint.h> //uint32_t type
 
 
 
+//default to timer 2
+//needed for time measurement
 #ifndef PID_TIMER
     #define PID_TIMER 2
 #endif
 
 
 
+/**
+ * PID controller handler.
+ */
 typedef struct
 {
+    /** Set point. */
     double *w;
+    /** Process variable. */
     double *r;
+    /** Control variable. */
     double *u;
     
+    /** Direct proportional, integral and derivative factor. */
     double kp, ki, kd;
     
+    /** Integral and last error value. */
     double sum, last;
+    /** Integral, derivative (both before ki and kd) and output clamp. */
     double iMax, dMax, outMax;
 } Pid_t;
 
 
 
+/**
+ * Initializer function macro version.
+ * Use only if really needed.
+ */
 #define PID_INIT_CONTROLLER(_w, _r, _u, _kp, _ki, _kd, _iMax, _dMax, _outMax) \
     ((Pid_t){.w = (_w), .r = (_r), .u = (_u), \
         .kp = (_kp), .ki = (_ki), .kd = (_kd), \
@@ -68,12 +85,42 @@ typedef struct
 
 
 
+/**
+ * Starts the PID_TIMER and internally saves a pointer to the controllers
+ * that will be updated each iteration.
+ * 
+ * @param controllers array of controllers that will be updated each iteration
+ * @param n number of controllers
+ */
 void pid_init(Pid_t *controllers, size_t n);
 
+/**
+ * Initializes a new pid controller handler
+ * with the given pointers and parameters.
+ * 
+ * @param w pointer to the set point variable (input)
+ * @param r pointer to the process variable (input)
+ * @param u pointer to the control variable (output)
+ * @param kp proportional factor
+ * @param ki integral factor
+ * @param kd derivative factor
+ * @param iMax absolute integral clamp (before ki)
+ * @param dMax absolute derivative clamp (before kd)
+ * @param outMax absolute output clamp
+ * @return a new PID controller handler
+ */
 Pid_t pid_initController(double *w, double *r, double *u,
     double kp, double ki, double kd,
     double iMax, double dMax, double outMax);
 
+/**
+ * Each PID controller reads its set point and process variable
+ * and updates its control variable.
+ * The elapsed ticks (at F_CPU frequency)
+ * since the last iteration are returned.
+ * 
+ * @return the elapsed ticks (at F_CPU frequency) since the last iteration
+ */
 uint32_t pid_iterate(void);
 
 
