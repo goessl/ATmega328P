@@ -1,6 +1,8 @@
 /*
  * uartint.c
  * 
+ * Buffered, interrupt based UART driver.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
@@ -30,14 +32,15 @@
 
 
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <util/atomic.h>
-#include "ring.h"
+#include <avr/io.h>         //hardware registers
+#include <avr/interrupt.h>  //interrupt vectors
+#include <util/atomic.h>    //atomic blocks
+#include "ring.h"           //buffers
 #include "uartint.h"
 
 
 
+//default to Arduino oscillator
 #ifndef F_CPU
     #define F_CPU 16000000UL
     #warning "F_CPU not defined! Assuming 16MHz."
@@ -45,36 +48,41 @@
 
 
 
-#include <util/setbaud.h>
+#include <util/setbaud.h>   //baud registers
 
 
 
+/** Stream function wrapper. */
 static int uartint_putc(char c, FILE *stream)
 {
-    (void)stream;
+    (void)stream;   //suppress unused warning
     if(uartint_transmit(c))
         return _FDEV_EOF;
     
     return c;
 }
-
+/** Stream function wrapper. */
 static int uartint_getc(FILE *stream)
 {
     uint8_t c;
     
-    (void)stream;
+    (void)stream;   //suppress unused warning
     if(uartint_receive(&c))
         return _FDEV_EOF;
     
     return c;
 }
 
+//stream setups
+//https://www.nongnu.org/avr-libc/user-manual/group__avr__stdio.html
 FILE uartint_out = FDEV_SETUP_STREAM(uartint_putc, NULL, _FDEV_SETUP_WRITE);
 FILE uartint_in = FDEV_SETUP_STREAM(NULL, uartint_getc, _FDEV_SETUP_READ);
 
 
 
+/** Transmit and receive fifos. */
 static volatile Ring_t uartint_transmitBuf, uartint_receiveBuf;
+/** Transmit and receive data locations used by the fifos. */
 static volatile uint8_t uartint_transmitArray[UARTINT_BUF_LEN],
     uartint_receiveArray[UARTINT_BUF_LEN];
 
@@ -82,12 +90,15 @@ static volatile uint8_t uartint_transmitArray[UARTINT_BUF_LEN],
 
 void uartint_init(void)
 {
+    //init fifos
     uartint_transmitBuf =
         ring_init((uint8_t*)uartint_transmitArray, UARTINT_BUF_LEN);
     uartint_receiveBuf =
         ring_init((uint8_t*)uartint_receiveArray, UARTINT_BUF_LEN);
     
     
+    //setbaud.h values
+    //https://www.nongnu.org/avr-libc/user-manual/group__util__setbaud.html
     UBRR0H = UBRRH_VALUE;
     UBRR0L = UBRRL_VALUE;
     #if USE_2X
@@ -96,6 +107,8 @@ void uartint_init(void)
     
     UCSR0B |= (1 << RXCIE0) | (1 << RXEN0) | (1 << TXEN0);
     
+    
+    //redirect by default
     #ifndef NO_UART_STD
         stdout = &uartint_out;
         stdin = &uartint_in;
@@ -104,11 +117,10 @@ void uartint_init(void)
 
 
 
-//Non-blocking gets, returns s when the line is complete
-//https://gist.github.com/sebig3000/17c049f3562fccbbdfaeff090d166d60
 char *uartint_ngets(char *s, size_t n)
 {
     uint8_t c;
+    //next index to write to
     static size_t i = 0;
     
     
@@ -130,6 +142,8 @@ char *uartint_ngets(char *s, size_t n)
 
 
 
+//the functions could be exited from within the atomic blocks,
+//but the compiler doesn't know that and will throw a warning if done
 size_t uartint_transmitAvailable(void)
 {
     size_t ret;
@@ -157,22 +171,23 @@ void uartint_transmitFlush(void)
 
 bool uartint_transmit(uint8_t data)
 {
-    bool fail;
+    bool ret;
     
     
-    while(uartint_transmitAvailable() < 1)
+    //wait for available location
+    while(ring_isFull(uartint_transmitBuf))
         ;
-    
     
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        fail = ring_push((Ring_t*)&uartint_transmitBuf, data);
+        ret = ring_push((Ring_t*)&uartint_transmitBuf, data);
     }
     
-    if(!fail)
+    //only start transmitter when bytes has been written to the fifo
+    if(!ret)
         UCSR0B |= (1 << UDRIE0);
     
-    return fail;
+    return ret;
 }
 
 size_t uartint_transmitBurst(uint8_t *data, size_t len)
@@ -240,6 +255,7 @@ ISR(USART_UDRE_vect)
     
     if(!ring_pop((Ring_t*)&uartint_transmitBuf, &c))
         UDR0 = c;
+    //stop transmitter when there is not data to be transmitted
     else
         UCSR0B &= ~(1 << UDRIE0);
 }

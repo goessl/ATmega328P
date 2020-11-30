@@ -1,6 +1,8 @@
 /*
  * uartint_test.c
  * 
+ * uartint.h example.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
