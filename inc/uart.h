@@ -48,10 +48,6 @@
     #define BAUD 9600
 #endif
 
-#ifndef UART_BAUD_TOL
-    #define UART_BAUD_TOL 2
-#endif
-
 
 
 /** Stream that outputs to the UART. */
