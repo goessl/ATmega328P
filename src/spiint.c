@@ -174,11 +174,7 @@ void spiint_transmitBurst(uint8_t *out, uint8_t *in, size_t len,
         *spiint_port &= ~(1 << spiint_pin);
     
     //start transmission
-    if(spiint_len)
-        SPDR = *spiint_out++;
-    else
-        if(spiint_port)
-            *spiint_port |= (1 << spiint_pin);
+    SPDR = *spiint_out++;
 }
 
 
