@@ -1,6 +1,8 @@
 /*
  * spiint.c
  * 
+ * Buffered, interrupt based SPI driver.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
@@ -30,18 +32,21 @@
 
 
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
+#include <avr/io.h>         //hardware registers
+#include <avr/interrupt.h>  //interrupt vectors
 #include "spiint.h"
 
 
 
+//default to Arduino oscillator
 #ifndef F_CPU
     #define F_CPU 16000000UL
     #warning "F_CPU not defined! Assuming 16MHz."
 #endif
 
 
+//try every prescaler so that the frequency will be
+//between SPI_MIN_FREQUENCY and SPI_FREQUENCY
 #if SPI_MIN_FREQUENCY <= F_CPU/2 && F_CPU/2 <= SPI_FREQUENCY
     #define SPI_PRESCALER 2
     #define SPR0_VALUE 0
@@ -107,17 +112,25 @@
 
 
 
+/** Location of the byte that will be shifted out next. */
 static volatile uint8_t *spiint_out;
+/** Location where the next shifted in byte will be written to. */
 static volatile uint8_t *spiint_in;
+/** Number of bytes left to shift out/in. */
 static volatile size_t spiint_len;
+/** Address of the PORT the SS is connected to, or NULL. */
 static volatile uint8_t *spiint_port;
+/** Number of the corresponding bit (0-7) in the PORT register
+ * the SS i connected to. */
 static volatile uint8_t spiint_pin;
 
 
 
 void spiint_init(void)
 {
+    //SS, MOSI, SCK
     DDRB |= (1 << DDB2) | (1 << DDB3) | (1 << DDB5);
+    //MISO
     //DDRB &= ~(1 << DDB4);
     
     
@@ -145,8 +158,10 @@ void spiint_flush(void)
 void spiint_transmitBurst(uint8_t *out, uint8_t *in, size_t len,
     uint8_t *port, uint8_t pin)
 {
+    //block if a transmission is still going
     spiint_flush();
     
+    //save locations
     spiint_out = out;
     spiint_in = in;
     spiint_len = len;
@@ -154,9 +169,11 @@ void spiint_transmitBurst(uint8_t *out, uint8_t *in, size_t len,
     spiint_pin = pin;
     
     
+    //pull SS low only if provided
     if(spiint_port)
         *spiint_port &= ~(1 << spiint_pin);
     
+    //start transmission
     if(spiint_len)
         SPDR = *spiint_out++;
     else
@@ -168,11 +185,14 @@ void spiint_transmitBurst(uint8_t *out, uint8_t *in, size_t len,
 
 ISR(SPI_STC_vect)
 {
+    //save shifted in byte
     *spiint_in++ = SPDR;
     
+    //continue if not done
     if(--spiint_len)
         SPDR = *spiint_out++;
     else
+        //stop if done
         if(spiint_port)
             *spiint_port |= (1 << spiint_pin);
 }
