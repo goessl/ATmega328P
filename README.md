@@ -2,15 +2,15 @@
 
 Driver library for basic functionalities of the ATmega328P (Arduino UNO)
 microcontroller.
- * uart - UART (blocking)
- * uartint - UART (interrupt based) (uses ring.h)
- * spi - SPI Master
- * spiint - SPI Master (interrupt based)
- * twi - I2C Master
- * twiint - I2C Master (interrupt based)
+ * uart - UART (minimalistic, blocking)
+ * uartint - UART (buffered, interrupt based)
+ * spi - SPI Master (minimalistic, blocking)
+ * spiint - SPI Master (buffered, interrupt based)
+ * twi - I2C Master (minimalistic, blocking)
+ * twiint - I2C Master (buffered, interrupt based)
  * adc - Analog to digital converter (interrupt based)
  * servo - Servo driver (interrupt based)
- * esc - ESC driver (uses servo.h)
+ * esc - Generic ESC driver
  * pid - PID controller driver with variable frequency (accessible iterate
  function) (interrupt based)
  * ring - Ring buffer implementation
@@ -87,7 +87,7 @@ example. The hex files can be uploaded to an Arduino UNO with e.g.
 
 MIT License
 
-Copyright (c) 2019 Sebastian Gössl
+Copyright (c) 2018 Sebastian Gössl
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
