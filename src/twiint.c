@@ -47,19 +47,25 @@
 
 
 //set prescaler so that the TWBR value is as large as possible
-#if (F_CPU/TWI_FREQUENCY - 16) / (2 * 1) <= 0xFF
+//and at least 10 (frequency error below 5%)
+//https://www.nongnu.org/avr-libc/user-manual/group__twi__demo.html Note[5]
+#if (F_CPU/TWI_FREQUENCY - 16) / (2 * 1) >= 10 \
+        && (F_CPU/TWI_FREQUENCY - 16) / (2 * 1) <= 0xFF
     #define TWI_PRESCALER 1
     #define TWPS0_VALUE 0
     #define TWPS1_VALUE 0
-#elif (F_CPU/TWI_FREQUENCY - 16) / (2 * 4) <= 0xFF
+#elif (F_CPU/TWI_FREQUENCY - 16) / (2 * 4) >= 10 \
+        && (F_CPU/TWI_FREQUENCY - 16) / (2 * 4) <= 0xFF
     #define TWI_PRESCALER 4
     #define TWPS0_VALUE 1
     #define TWPS1_VALUE 0
-#elif (F_CPU/TWI_FREQUENCY - 16) / (2 * 16) <= 0xFF
+#elif (F_CPU/TWI_FREQUENCY - 16) / (2 * 16) >= 10 \
+        && (F_CPU/TWI_FREQUENCY - 16) / (2 * 16) <= 0xFF
     #define TWI_PRESCALER 16
     #define TWPS0_VALUE 0
     #define TWPS1_VALUE 1
-#elif (F_CPU/TWI_FREQUENCY - 16) / (2 * 64) <= 0xFF
+#elif (F_CPU/TWI_FREQUENCY - 16) / (2 * 64) >= 10 \
+        && (F_CPU/TWI_FREQUENCY - 16) / (2 * 64) <= 0xFF
     #define TWI_PRESCALER 64
     #define TWPS0_VALUE 1
     #define TWPS1_VALUE 1
