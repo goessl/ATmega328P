@@ -1,6 +1,8 @@
 /*
  * esc.c
  * 
+ * Generic ESC driver.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
@@ -30,7 +32,7 @@
 
 
 
-#include <util/delay.h>
+#include <util/delay.h> //delay function for initialization
 #include "servo.h"
 #include "esc.h"
 
