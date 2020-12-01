@@ -1,6 +1,8 @@
 /*
  * twiint.c
  * 
+ * Buffered, interrupt based TWI driver.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
@@ -30,19 +32,21 @@
 
 
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <util/twi.h>
+#include <avr/io.h>         //hardware registers
+#include <avr/interrupt.h>  //interrupt vectors
+#include <util/twi.h>       //TWI status masks
 #include "twiint.h"
 
 
 
+//default to Arduino oscillator
 #ifndef F_CPU
     #define F_CPU 16000000UL
     #warning "F_CPU not defined! Assuming 16MHz."
 #endif
 
 
+//set prescaler so that the TWBR value is as large as possible
 #if (F_CPU/TWI_FREQUENCY - 16) / (2 * 1) <= 0xFF
     #define TWI_PRESCALER 1
     #define TWPS0_VALUE 0
@@ -67,9 +71,14 @@
 
 
 
+/** Slave address byte (with read/write bit). */
 static uint8_t twiint_address;
+/** Location where the next byte that has been read will be written to
+or the next byte that should be written will be read from. */
 static uint8_t *twiint_data;
+/** Number of bytes already transmitted. */
 static size_t twiint_index;
+/** Number of bytes that should be transmitted. */
 static size_t twiint_len;
 
 

@@ -1,6 +1,8 @@
 /*
  * twiint.h
  * 
+ * Buffered, interrupt based TWI driver.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
@@ -35,26 +37,61 @@
 
 
 
+#include <stdbool.h>    //bool type
+#include <stddef.h>     //size_t type
+#include <stdint.h>     //uint8_t type
+
+
+
+//default to Fast Mode
 #ifndef TWI_FREQUENCY
     #define TWI_FREQUENCY 400000
 #endif
 
+/** Slave address with write intend. */
 #define TWI_ADDRESS_W(x)    (((x) << 1) & ~0x01)
+/** Slave address with read intend. */
 #define TWI_ADDRESS_R(x)    (((x) << 1) | 0x01)
 
 
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
-
-
-
+/**
+ * Initializes the TWI hardware for master mode operating at TWI_FREQUENCY.
+ * Configures SCL and SDA (PC5 and PC4) as outputs.
+ * Interrupts have to be enabled.
+ */
 void twiint_init(void);
 
+/**
+ * Returns true if currently a transmission is ongoing.
+ * 
+ * @return if currently a transmission is ongoing
+ */
 bool twiint_busy(void);
+/**
+ * Blocks until the transmission is completed.
+ */
 void twiint_flush(void);
 
+/**
+ * Starts a TWI transmission writing or reading multiple bytes.
+ * The address byte should be provided already manipulated by
+ * TWI_ADDRESS_W if data should be written
+ * or TWI_ADDRESS_R if data should be read,
+ * both slave address in 7-bit format.
+ * This function then returns while the transmission continues,
+ * getting handled by interrupts routines.
+ * The data location must not be changed while the transmission is ongoing
+ * as the bytes are read/written as they are needed.
+ * When an transmission is still ongoing, this function blocks until the
+ * transmission is completed before starting a new one.
+ * 
+ * @param address slave address byte, use the result of TWI_ADDRESS_W for write
+ * intend or TWI_ADDRESS_R for read intend applied on the 7-bit address
+ * @param data location of the bytes to transmit
+ * or location for the read in bytes to be written to
+ * @param len number of bytes to write/read
+ */
 void twiint_start(uint8_t address, uint8_t *data, size_t len);
 
 
