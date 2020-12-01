@@ -1,6 +1,8 @@
 /*
  * servo.c
  * 
+ * Interrupt based servo driver.
+ * 
  * Author:      Sebastian Goessl
  * Hardware:    ATmega328P
  * 
@@ -30,27 +32,25 @@
 
 
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <util/atomic.h>
-#include <math.h>
+#include <avr/io.h>         //hardware registers
+#include <avr/interrupt.h>  //interrupt vectors
+#include <util/atomic.h>    //atomic blocks
 #include "servo.h"
 
 
 
+//default to Arduino oscillator
 #ifndef F_CPU
     #define F_CPU 16000000UL
     #warning "F_CPU not defined! Assuming 16MHz."
 #endif
 
 
-#define SERVO_BASE_US       (20 * 1000)
-#define SERVO_MIN_US        (1 * 1000)
-#define SERVO_MAX_US        (2 * 1000)
 #define SERVO_US_PER_SECOND 1000000
-#define SERVO_MAX_N         (SERVO_BASE_US / SERVO_MAX_US)
 
-
+//define timer parameters
+//set prescaler to the lowest value possible
+//=maximum counter value = most accurate timing
 #if SERVO_TIMER == 0
     #define SERVO_OCRxA OCR0A
     #define SERVO_OCRxA_TYPE uint8_t
@@ -213,8 +213,10 @@
 
 
 static volatile uint8_t **servo_PORTs;
+/** Bit masks with the bits where the servos are attached enabled. */
 static volatile uint8_t *servo_masks;
 static volatile size_t servo_n;
+/** Index of the servo whose PWM is currently timed. */
 static volatile size_t servo_current = 0;
 static volatile SERVO_OCRxA_TYPE servo_values[SERVO_MAX_N];
 
@@ -317,13 +319,17 @@ void servo_setAllServosScaled(double percent)
 
 ISR(SERVO_vect)
 {
+    //if servo pin is low
     if(~*servo_PORTs[servo_current] & servo_masks[servo_current])
     {
+        //turn pin high
         *servo_PORTs[servo_current] |= servo_masks[servo_current];
         SERVO_OCRxA = servo_values[servo_current];
     }
+    //if servo pin is high
     else
     {
+        //turn pin low
         *servo_PORTs[servo_current] &= ~servo_masks[servo_current];
         SERVO_OCRxA = SERVO_BASE_OCRxA/servo_n - SERVO_OCRxA;
         
